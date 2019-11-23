@@ -12,5 +12,14 @@
     "browser-sync": "^2.26.7",
     "bulma": "^0.8.0",
     "jquery": "^3.4.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aegustaf/COMP-426-frontend.git"
+  },
+  "bugs": {
+    "url": "https://github.com/aegustaf/COMP-426-frontend/issues"
+  },
+  "homepage": "https://github.com/aegustaf/COMP-426-frontend#readme"
 }
