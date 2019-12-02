@@ -21,10 +21,12 @@ async function create(username, password, firstname, lastname, cstrack, gradyear
         data: {
             name: username,
             pass: password,
-            firstname: firstname,
-            lastname: lastname,
-            cstrack: cstrack,
-            gradyear: gradyear
+            data: {
+                firstname: firstname,
+                lastname: lastname,
+                cstrack: cstrack,
+                gradyear: gradyear
+            }
         }
     })
     return result.status;
@@ -174,12 +176,12 @@ async function createUserObject(bearer) {
     //     data
     // } = await getUserClasses(localStorage.getItem("jwt"))
     // console.log(data)
-    let {
-        data
-    } = await getClasses(localStorage.getItem("jwt"))
-    console.log(data)
+    // let {
+    //     data
+    // } = await getClasses(localStorage.getItem("jwt"))
+    // console.log(data)
     // let data = await createUser("testMethod", "testMethod", "test", "method", "BS", 2019);
-    // let data = await createUser("tm10", "pass", "tm6", "tm6", "BS", 2018)
+    let data = await createUser("tm13", "pass", "tm6", "tm6", "BS", 2018)
     // let resp = await addClass(localStorage.getItem("jwt"), "COMP110")
     // createUserObject("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdG1ldGhvZCIsImlhdCI6MTU3NTI2NDE4OCwiZXhwIjoxNTc3ODU2MTg4fQ.CIzOmAIKBsQMh9sewtVnFEoWx02JAylEkAKvM2dIxL0")
 })();
