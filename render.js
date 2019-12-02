@@ -2,9 +2,13 @@ export const $root = $('#root');
 
 export const setUp = function() {
     /* Click handlers for Login and Sign Up buttons */
-    // $(document).on("click", "#loginButton", handleLoginButtonClick);
+    $(document).on("click", "#loginButton", handleLoginButtonClick);
     $(document).on("click", "#signupButton", handleSignUpButtonClick);
 
+    // $(document).on("click", "#submitLogin", handleLoginSubmit);
+    // $(document).on("click", "#submitSignup", handleSignUpSubmit);
+ 
+    
     /* Click handlers for the 5 tabs in the navigation bar */
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
@@ -17,6 +21,46 @@ export const setUp = function() {
     $(document).on("click", "#cancelProfile", handleCancelEditProfileClick);
     $(document).on("click", "#submitProfile", handleSubmitEditProfileClick);
 
+};
+
+/*----------------------------------------- LOGIN TAB -------------------------------------------*/
+
+export const handleLoginButtonClick = function() {
+    renderLoginForm();
+};
+
+export const renderLoginForm = function() {
+    $root.empty();
+    let html = 
+        `<section class="section profile">
+            <div class="card">
+                <header class="card-header">
+                <p class="card-header-title">
+                    Log In
+                </p>
+                </header>
+                <div class="card-content">
+                    <form id="prfoileEditForm">
+                        <div class="field">
+                            <label class="label">Username:</label>
+                            <div class="control">
+                                <input class="input"  type="text">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Password:</label>
+                            <div class="control">
+                                <input class="input"  type="text">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <footer class="card-footer">
+                <a href="#" class="card-footer-item" id="submitLogin">Log In</a>
+                </footer>
+            </div>
+        </section>`;
+    $root.append(html);
 };
 
 /*----------------------------------------- SIGN UP TAB -------------------------------------------*/
@@ -88,7 +132,7 @@ export const renderSignUpForm = function() {
                 </form>
                 </div>
                 <footer class="card-footer">
-                <a href="#" class="card-footer-item" id="createProfile">Create Profile</a>
+                <a href="#" class="card-footer-item" id="submitSignup">Create Profile</a>
                 </footer>
             </div>
         </section>`;
