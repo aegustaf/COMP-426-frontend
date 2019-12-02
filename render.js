@@ -1,6 +1,14 @@
 export const $root = $('#root');
 
 export const setUp = function() {
+    /* Click handlers for Login and Sign Up buttons */
+    $(document).on("click", "#loginButton", handleLoginButtonClick);
+    $(document).on("click", "#signupButton", handleSignUpButtonClick);
+
+    // $(document).on("click", "#submitLogin", handleLoginSubmit);
+    // $(document).on("click", "#submitSignup", handleSignUpSubmit);
+ 
+    
     /* Click handlers for the 5 tabs in the navigation bar */
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
@@ -13,9 +21,183 @@ export const setUp = function() {
     $(document).on("click", "#cancelProfile", handleCancelEditProfileClick);
     $(document).on("click", "#submitProfile", handleSubmitEditProfileClick);
 
+};
+
+/*----------------------------------------- LOGIN TAB -------------------------------------------*/
+
+export const handleLoginButtonClick = function() {
+    renderLoginForm();
+};
+
+export const renderLoginForm = function() {
+    $root.empty();
+    let html = 
+        `<section class="section profile">
+            <div class="card">
+                <header class="card-header">
+                <p class="card-header-title">
+                    Log In
+                </p>
+                </header>
+                <div class="card-content">
+                    <form id="prfoileEditForm">
+                        <div class="field">
+                            <label class="label">Username:</label>
+                            <div class="control">
+                                <input class="input"  type="text">
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Password:</label>
+                            <div class="control">
+                                <input class="input"  type="text">
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <footer class="card-footer">
+                <a href="#" class="card-footer-item" id="submitLogin">Log In</a>
+                </footer>
+            </div>
+        </section>`;
+    $root.append(html);
+};
+
+/*----------------------------------------- SIGN UP TAB -------------------------------------------*/
+
+export const handleSignUpButtonClick = function() {
+    renderSignUpForm();
+};
+
+export const renderSignUpForm = function() {
+    $root.empty();
+    let html = 
+        `<section class="section profile">
+            <div class="card">
+                <header class="card-header">
+                <p class="card-header-title">
+                    Sign Up
+                </p>
+                </header>
+                <div class="card-content">
+                <form id="prfoileEditForm">
+                    <div class="field">
+                        <label class="label">Username:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Password:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">First Name:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Last Name:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">CS Track:</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="track" checked >
+                                COMP BA
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="track">
+                                COMP BS
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="track" >
+                                COMP Minor
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Graduation Year:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    
+                </form>
+                </div>
+                <footer class="card-footer">
+                <a href="#" class="card-footer-item" id="submitSignup">Create Profile</a>
+                </footer>
+            </div>
+        </section>`;
+    $root.append(html);
+};
+
+/*----------------------------------------- FIND CLASSES TAB -------------------------------------------*/
+
+/* Handles when user clicks on Find Classes tab in nav bar */
+export const handleFindNavClick = function() {
 
 };
 
+/*----------------------------------------- PROGRESS TAB -------------------------------------------*/
+
+/* Handles when user clicks on Progress tab in nav bar */
+export const handleProgressNavClick = function() {
+  
+};
+
+/*----------------------------------------- ADD COMPLETED COURSES TAB -------------------------------------------*/
+
+/* Handles when user clicks on Add CompetedCourses tab in nav bar */
+export const handleAddNavClick = function() {
+
+};
+
+/*----------------------------------------- PROFILE TAB -------------------------------------------*/
+
+/* Handles when user clicks on Profile tab in nav bar */
+export const handleProfileNavClick = function() {
+    renderProfile();
+};
+
+/* Renders user's profile card */
+export const renderProfile = function() {
+    $root.empty();
+    let html = 
+        `<section class="section profile">
+            <div class="card">
+                <header class="card-header">
+                <p class="card-header-title">
+                    My Profile
+                </p>
+                
+                </header>
+                <div class="card-content">
+                <div class="content">
+                        <b>Username:  </b>  aegustaf
+                        <br><br>
+                        <b>Name:  </b>  Amanda Gustafson
+                        <br><br>
+                        <b>CS Track: </b>  COMP BA
+                        <br><br>
+                        <b>Graduation Year: </b>  2020
+                        <br>
+                </div>
+                </div>
+                <footer class="card-footer">
+                <a href="#" class="card-footer-item" id="editProfile">Edit</a>
+                </footer>
+            </div>
+        </section>`;
+    $root.append(html);
+};
 
 export const handleSubmitEditProfileClick = function() {
 
@@ -40,22 +222,39 @@ export const handleEditProfileClick = function() {
                 <div class="card-content">
                 <form id="prfoileEditForm">
                     <div class="field">
-                    <label class="label">Name:</label>
-                    <div class="control">
-                        <input class="input"  type="text" value="Amanda Gustafson">
-                    </div>
-                    </div>
-                    <div class="field">
-                    <label class="label">CS Track:</label>
-                    <div class="control">
-                        <input class="input"  type="text" value="COMP BA">
-                    </div>
+                        <label class="label">First Name:</label>
+                        <div class="control">
+                            <input class="input"  type="text" value="Amanda">
+                        </div>
                     </div>
                     <div class="field">
-                    <label class="label">Graduation Year:</label>
-                    <div class="control">
-                        <input class="input"  type="text" value="2020">
+                        <label class="label">Last Name:</label>
+                        <div class="control">
+                            <input class="input" type="text" value="Gustafson">
+                        </div>
                     </div>
+                    <div class="field">
+                        <label class="label">CS Track:</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="track" checked>
+                                COMP BA
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="track">
+                                COMP BS
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="track" >
+                                COMP Minor
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Graduation Year:</label>
+                        <div class="control">
+                            <input class="input"  type="text" value="2020">
+                        </div>
                     </div>
                     
                 </form>
@@ -69,57 +268,8 @@ export const handleEditProfileClick = function() {
     $root.append(html);
 };
 
-/* Handles when user clicks on Find Classes tab in nav bar */
-export const handleFindNavClick = function() {
 
-};
-
-/* Handles when user clicks on Progress tab in nav bar */
-export const handleProgressNavClick = function() {
-
-};
-
-/* Handles when user clicks on Add CompetedCourses tab in nav bar */
-export const handleAddNavClick = function() {
-
-};
-
-/* Renders user's profile card */
-export const renderProfile = function() {
-    $root.empty();
-    let html = 
-        `<section class="section profile">
-            <div class="card">
-                <header class="card-header">
-                <p class="card-header-title">
-                    My Profile
-                </p>
-                
-                </header>
-                <div class="card-content">
-                <div class="content">
-                        <b>Name:  </b>  Amanda Gustafson
-                        <br><br>
-                        <b>Email:  </b>  aegustaf@live.unc.edu
-                        <br><br>
-                        <b>CS Track: </b>  COMP BA
-                        <br><br>
-                        <b>Graduation Year: </b>  2020
-                        <br>
-                </div>
-                </div>
-                <footer class="card-footer">
-                <a href="#" class="card-footer-item" id="editProfile">Edit</a>
-                </footer>
-            </div>
-        </section>`;
-    $root.append(html);
-};
-
-/* Handles when user clicks on Profile tab in nav bar */
-export const handleProfileNavClick = function() {
-    renderProfile();
-};
+/*----------------------------------------- HOME TAB -------------------------------------------*/
 
 /* Handles when user clicks on Home tab in nav bar */
 export const handleHomeNavClick = function() {
