@@ -14,7 +14,7 @@ let localStorage = window.localStorage;
  * @param {string} cstrack {BS or BA}
  * @param {number} gradyear 
  */
-async function create(username, password, firstname, lastname, cstrack, gradyear) {
+export async function create(username, password, firstname, lastname, cstrack, gradyear) {
     const result = await axios({
         method: 'post',
         url: server + "account/create",
@@ -38,7 +38,7 @@ async function create(username, password, firstname, lastname, cstrack, gradyear
  * @param {string} password 
  * @returns response object that should contain the JWT token and the name of the user
  */
-async function login(username, password) {
+export async function login(username, password) {
     const result = await axios({
         method: 'post',
         url: server + "account/login",
@@ -55,7 +55,7 @@ async function login(username, password) {
  * @param {string} bearer the JWT bearer token for the user you are attempting to get the status of
  * @returns name and other user related information 
  */
-async function status(bearer) {
+export async function status(bearer) {
     try {
         const result = await axios({
             method: 'get',
@@ -71,25 +71,32 @@ async function status(bearer) {
 }
 // END INTERNAL METHODS. USE STUFF BELOW THIS ========================================================
 
+export async function loginAndSetJWT(username, password) {
+    login(username, password).then(result => {
+        // Save the jwt token to the localstorage
+        localStorage.setItem("jwt", result.data.jwt);
+        return result;
+    })
+}
 /**
  * 
  * @param {string} username 
  * @param {string} password 
  * @returns data object. Stores the jwt token in the localstorage Storage object 
  */
-async function loginAndGetStatus(username, password) {
+export async function loginAndGetStatus(username, password) {
     // login
     login(username, password).then(result => {
         // Save the jwt token to the localstorage
         localStorage.setItem("jwt", result.data.jwt);
         // get the status and return it
-        status(localStorage.getItem("jwt")).then(res => {
+        status(result.data.jwt).then(res => {
             return res;
         })
     })
 };
 
-async function createUser(username, password, firstname, lastname, cstrack, gradyear) {
+export async function createUser(username, password, firstname, lastname, cstrack, gradyear) {
     // Create the user in the backend and assign a unique jwt token
     create(username, password, firstname, lastname, cstrack, gradyear).then(ret => {
         // Login so that we set can get the jwt token
@@ -109,7 +116,7 @@ async function createUser(username, password, firstname, lastname, cstrack, grad
  * @param {string} bearer jwt token
  * @param {string} classname the name of the class you are adding
  */
-async function addClass(bearer, classname) {
+export async function addClass(bearer, classname) {
     const result = await axios({
         method: 'post',
         url: server + "user/classes",
@@ -129,7 +136,7 @@ async function addClass(bearer, classname) {
  * @param {string} bearer jwt token. 
  * @returns Classes for the user associated with the jwt token. 
  */
-async function getUserClasses(bearer) {
+export async function getUserClasses(bearer) {
     const result = await axios({
         method: 'get',
         url: server + "user/classes",
@@ -144,7 +151,7 @@ async function getUserClasses(bearer) {
 // async function removeClass();
 
 // This is where we will use the private store. I will put all of the classes in the private store under the classes label and we can query it only if we are logged in. 
-async function getClasses(bearer) {
+export async function getClasses(bearer) {
     const result = await axios({
         method: 'get',
         url: server + "private/classes",
@@ -155,7 +162,7 @@ async function getClasses(bearer) {
     return result;
 }
 
-async function createUserObject(bearer) {
+export async function createUserObject(bearer) {
     const result = await axios({
         method: 'post',
         url: server + "user/classes",
@@ -168,8 +175,9 @@ async function createUserObject(bearer) {
     })
     return result;
 }
-// Playground
-// console.log(localStorage.getItem("jwt"));
+
+
+// ================= PLAYGROUND ==========================
 
 (async () => {
     // let {
@@ -181,7 +189,13 @@ async function createUserObject(bearer) {
     // } = await getClasses(localStorage.getItem("jwt"))
     // console.log(data)
     // let data = await createUser("testMethod", "testMethod", "test", "method", "BS", 2019);
-    let data = await createUser("tm13", "pass", "tm6", "tm6", "BS", 2018)
-    // let resp = await addClass(localStorage.getItem("jwt"), "COMP110")
+    // let data = await createUser("tm14", "pass", "tm6", "tm6", "BS", 2018)
+    let data = await loginAndSetJWT("tm11", "pass").then(() => {
+        addClass(localStorage.getItem("jwt"), "COMP110")
+    })
+    // let {
+    //     data
+    // } = await getClasses(localStorage.getItem("jwt"))
+    // console.log(data)
     // createUserObject("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuYW1lIjoidGVzdG1ldGhvZCIsImlhdCI6MTU3NTI2NDE4OCwiZXhwIjoxNTc3ODU2MTg4fQ.CIzOmAIKBsQMh9sewtVnFEoWx02JAylEkAKvM2dIxL0")
 })();
