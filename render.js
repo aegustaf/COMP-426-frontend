@@ -1,6 +1,10 @@
 export const $root = $('#root');
 
 export const setUp = function() {
+    /* Click handlers for Login and Sign Up buttons */
+    // $(document).on("click", "#loginButton", handleLoginButtonClick);
+    $(document).on("click", "#signupButton", handleSignUpButtonClick);
+
     /* Click handlers for the 5 tabs in the navigation bar */
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
@@ -13,9 +17,83 @@ export const setUp = function() {
     $(document).on("click", "#cancelProfile", handleCancelEditProfileClick);
     $(document).on("click", "#submitProfile", handleSubmitEditProfileClick);
 
-
 };
 
+/*----------------------------------------- SIGN UP TAB -------------------------------------------*/
+
+export const handleSignUpButtonClick = function() {
+    renderSignUpForm();
+};
+
+export const renderSignUpForm = function() {
+    $root.empty();
+    let html = 
+        `<section class="section profile">
+            <div class="card">
+                <header class="card-header">
+                <p class="card-header-title">
+                    Sign Up
+                </p>
+                </header>
+                <div class="card-content">
+                <form id="prfoileEditForm">
+                    <div class="field">
+                        <label class="label">Username:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Password:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">First Name:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Last Name:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">CS Track:</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="track" checked >
+                                COMP BA
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="track">
+                                COMP BS
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="track" >
+                                COMP Minor
+                            </label>
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Graduation Year:</label>
+                        <div class="control">
+                            <input class="input"  type="text">
+                        </div>
+                    </div>
+                    
+                </form>
+                </div>
+                <footer class="card-footer">
+                <a href="#" class="card-footer-item" id="createProfile">Create Profile</a>
+                </footer>
+            </div>
+        </section>`;
+    $root.append(html);
+};
 
 /*----------------------------------------- FIND CLASSES TAB -------------------------------------------*/
 
@@ -59,9 +137,9 @@ export const renderProfile = function() {
                 </header>
                 <div class="card-content">
                 <div class="content">
-                        <b>Name:  </b>  Amanda Gustafson
+                        <b>Username:  </b>  aegustaf
                         <br><br>
-                        <b>Email:  </b>  aegustaf@live.unc.edu
+                        <b>Name:  </b>  Amanda Gustafson
                         <br><br>
                         <b>CS Track: </b>  COMP BA
                         <br><br>
@@ -100,24 +178,30 @@ export const handleEditProfileClick = function() {
                 <div class="card-content">
                 <form id="prfoileEditForm">
                     <div class="field">
-                        <label class="label">Name:</label>
+                        <label class="label">First Name:</label>
                         <div class="control">
-                            <input class="input"  type="text" value="Amanda Gustafson">
+                            <input class="input"  type="text" value="Amanda">
                         </div>
                     </div>
-                        <div class="field">
+                    <div class="field">
+                        <label class="label">Last Name:</label>
+                        <div class="control">
+                            <input class="input" type="text" value="Gustafson">
+                        </div>
+                    </div>
+                    <div class="field">
                         <label class="label">CS Track:</label>
                         <div class="control">
                             <label class="radio">
-                                <input type="radio" name="arts">
+                                <input type="radio" name="track" checked>
                                 COMP BA
                             </label>
                             <label class="radio">
-                                <input type="radio" name="science" checked>
+                                <input type="radio" name="track">
                                 COMP BS
                             </label>
                             <label class="radio">
-                                <input type="radio" name="minor" >
+                                <input type="radio" name="track" >
                                 COMP Minor
                             </label>
                         </div>
