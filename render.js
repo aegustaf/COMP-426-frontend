@@ -17,6 +17,66 @@ export const setUp = function() {
 };
 
 
+/*----------------------------------------- FIND CLASSES TAB -------------------------------------------*/
+
+/* Handles when user clicks on Find Classes tab in nav bar */
+export const handleFindNavClick = function() {
+
+};
+
+/*----------------------------------------- PROGRESS TAB -------------------------------------------*/
+
+/* Handles when user clicks on Progress tab in nav bar */
+export const handleProgressNavClick = function() {
+  
+};
+
+/*----------------------------------------- ADD COMPLETED COURSES TAB -------------------------------------------*/
+
+/* Handles when user clicks on Add CompetedCourses tab in nav bar */
+export const handleAddNavClick = function() {
+
+};
+
+/*----------------------------------------- PROFILE TAB -------------------------------------------*/
+
+/* Handles when user clicks on Profile tab in nav bar */
+export const handleProfileNavClick = function() {
+    renderProfile();
+};
+
+/* Renders user's profile card */
+export const renderProfile = function() {
+    $root.empty();
+    let html = 
+        `<section class="section profile">
+            <div class="card">
+                <header class="card-header">
+                <p class="card-header-title">
+                    My Profile
+                </p>
+                
+                </header>
+                <div class="card-content">
+                <div class="content">
+                        <b>Name:  </b>  Amanda Gustafson
+                        <br><br>
+                        <b>Email:  </b>  aegustaf@live.unc.edu
+                        <br><br>
+                        <b>CS Track: </b>  COMP BA
+                        <br><br>
+                        <b>Graduation Year: </b>  2020
+                        <br>
+                </div>
+                </div>
+                <footer class="card-footer">
+                <a href="#" class="card-footer-item" id="editProfile">Edit</a>
+                </footer>
+            </div>
+        </section>`;
+    $root.append(html);
+};
+
 export const handleSubmitEditProfileClick = function() {
 
 };
@@ -69,57 +129,8 @@ export const handleEditProfileClick = function() {
     $root.append(html);
 };
 
-/* Handles when user clicks on Find Classes tab in nav bar */
-export const handleFindNavClick = function() {
 
-};
-
-/* Handles when user clicks on Progress tab in nav bar */
-export const handleProgressNavClick = function() {
-
-};
-
-/* Handles when user clicks on Add CompetedCourses tab in nav bar */
-export const handleAddNavClick = function() {
-
-};
-
-/* Renders user's profile card */
-export const renderProfile = function() {
-    $root.empty();
-    let html = 
-        `<section class="section profile">
-            <div class="card">
-                <header class="card-header">
-                <p class="card-header-title">
-                    My Profile
-                </p>
-                
-                </header>
-                <div class="card-content">
-                <div class="content">
-                        <b>Name:  </b>  Amanda Gustafson
-                        <br><br>
-                        <b>Email:  </b>  aegustaf@live.unc.edu
-                        <br><br>
-                        <b>CS Track: </b>  COMP BA
-                        <br><br>
-                        <b>Graduation Year: </b>  2020
-                        <br>
-                </div>
-                </div>
-                <footer class="card-footer">
-                <a href="#" class="card-footer-item" id="editProfile">Edit</a>
-                </footer>
-            </div>
-        </section>`;
-    $root.append(html);
-};
-
-/* Handles when user clicks on Profile tab in nav bar */
-export const handleProfileNavClick = function() {
-    renderProfile();
-};
+/*----------------------------------------- HOME TAB -------------------------------------------*/
 
 /* Handles when user clicks on Home tab in nav bar */
 export const handleHomeNavClick = function() {
