@@ -100,22 +100,33 @@ export const handleEditProfileClick = function() {
                 <div class="card-content">
                 <form id="prfoileEditForm">
                     <div class="field">
-                    <label class="label">Name:</label>
-                    <div class="control">
-                        <input class="input"  type="text" value="Amanda Gustafson">
+                        <label class="label">Name:</label>
+                        <div class="control">
+                            <input class="input"  type="text" value="Amanda Gustafson">
+                        </div>
                     </div>
+                        <div class="field">
+                        <label class="label">CS Track:</label>
+                        <div class="control">
+                            <label class="radio">
+                                <input type="radio" name="arts">
+                                COMP BA
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="science" checked>
+                                COMP BS
+                            </label>
+                            <label class="radio">
+                                <input type="radio" name="minor" >
+                                COMP Minor
+                            </label>
+                        </div>
                     </div>
                     <div class="field">
-                    <label class="label">CS Track:</label>
-                    <div class="control">
-                        <input class="input"  type="text" value="COMP BA">
-                    </div>
-                    </div>
-                    <div class="field">
-                    <label class="label">Graduation Year:</label>
-                    <div class="control">
-                        <input class="input"  type="text" value="2020">
-                    </div>
+                        <label class="label">Graduation Year:</label>
+                        <div class="control">
+                            <input class="input"  type="text" value="2020">
+                        </div>
                     </div>
                     
                 </form>
