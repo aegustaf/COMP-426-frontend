@@ -84,7 +84,7 @@ export const handleSignUpButtonClick = function () {
 export const handleSignUpSubmit = function () {
     // Get form values
     let username = $("#signupForm_username").val()
-    let password = $("#signupForm_lastname").val()
+    let password = $("#signupForm_password").val()
     let year = $("#signupForm_year").val()
     let firstname = $("#signupForm_firstname").val()
     let lastname = $("#signupForm_lastname").val()
