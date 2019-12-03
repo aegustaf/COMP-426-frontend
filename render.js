@@ -2,6 +2,7 @@ export const $root = $('#root');
 
 export const setUp = function() {
     /* Click handlers for Login and Sign Up buttons */
+    $(document).on("click", "#logo", handleHomeNavClick);
     $(document).on("click", "#loginButton", handleLoginButtonClick);
     $(document).on("click", "#signupButton", handleSignUpButtonClick);
 
@@ -278,7 +279,7 @@ export const handleHomeNavClick = function() {
         `<section class="section">
             <div class="container">
                 <div class="content">
-                    <h1 class="title">Use Progess in CS</h1>
+                    <h1 class="title">Use Progress in CS</h1>
                     <h5 class="subtitle has-text-grey">Map out your 4-year CS plan</h5>
                     <p>When it comes to developing websites, design can be a very fun aspect. But in reality we often don't want
                         to spend hours writing CSS.
