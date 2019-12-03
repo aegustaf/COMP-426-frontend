@@ -1,15 +1,20 @@
+import {
+    loginAndSetJWT,
+    loginAndGetStatus
+} from "./backend.js";
+
 export const $root = $('#root');
 
-export const setUp = function() {
+export const setUp = function () {
     /* Click handlers for Login and Sign Up buttons */
     $(document).on("click", "#logo", handleHomeNavClick);
     $(document).on("click", "#loginButton", handleLoginButtonClick);
     $(document).on("click", "#signupButton", handleSignUpButtonClick);
 
-    // $(document).on("click", "#submitLogin", handleLoginSubmit);
+    $(document).on("click", "#submitLogin", handleLoginSubmit);
     // $(document).on("click", "#submitSignup", handleSignUpSubmit);
- 
-    
+
+
     /* Click handlers for the 5 tabs in the navigation bar */
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
@@ -26,13 +31,16 @@ export const setUp = function() {
 
 /*----------------------------------------- LOGIN TAB -------------------------------------------*/
 
-export const handleLoginButtonClick = function() {
+export const handleLoginButtonClick = function () {
     renderLoginForm();
 };
-
-export const renderLoginForm = function() {
+export const handleLoginSubmit = function () {
+    loginAndGetStatus("tm10", "pass")
+    console.log(localStorage.getItem("jwt"))
+}
+export const renderLoginForm = function () {
     $root.empty();
-    let html = 
+    let html =
         `<section class="section profile">
             <div class="card">
                 <header class="card-header">
@@ -66,13 +74,13 @@ export const renderLoginForm = function() {
 
 /*----------------------------------------- SIGN UP TAB -------------------------------------------*/
 
-export const handleSignUpButtonClick = function() {
+export const handleSignUpButtonClick = function () {
     renderSignUpForm();
 };
 
-export const renderSignUpForm = function() {
+export const renderSignUpForm = function () {
     $root.empty();
-    let html = 
+    let html =
         `<section class="section profile">
             <div class="card">
                 <header class="card-header">
@@ -143,35 +151,35 @@ export const renderSignUpForm = function() {
 /*----------------------------------------- FIND CLASSES TAB -------------------------------------------*/
 
 /* Handles when user clicks on Find Classes tab in nav bar */
-export const handleFindNavClick = function() {
+export const handleFindNavClick = function () {
 
 };
 
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 
 /* Handles when user clicks on Progress tab in nav bar */
-export const handleProgressNavClick = function() {
-  
+export const handleProgressNavClick = function () {
+
 };
 
 /*----------------------------------------- ADD COMPLETED COURSES TAB -------------------------------------------*/
 
 /* Handles when user clicks on Add CompetedCourses tab in nav bar */
-export const handleAddNavClick = function() {
+export const handleAddNavClick = function () {
 
 };
 
 /*----------------------------------------- PROFILE TAB -------------------------------------------*/
 
 /* Handles when user clicks on Profile tab in nav bar */
-export const handleProfileNavClick = function() {
+export const handleProfileNavClick = function () {
     renderProfile();
 };
 
 /* Renders user's profile card */
-export const renderProfile = function() {
+export const renderProfile = function () {
     $root.empty();
-    let html = 
+    let html =
         `<section class="section profile">
             <div class="card">
                 <header class="card-header">
@@ -200,19 +208,19 @@ export const renderProfile = function() {
     $root.append(html);
 };
 
-export const handleSubmitEditProfileClick = function() {
+export const handleSubmitEditProfileClick = function () {
 
 };
 
 /* Handles when user clicks cancel on profile edit form */
-export const handleCancelEditProfileClick = function() {
+export const handleCancelEditProfileClick = function () {
     renderProfile();
 };
 
 /* Handles when user clciks on edit button for their profile */
-export const handleEditProfileClick = function() {
+export const handleEditProfileClick = function () {
     $root.empty();
-    let html = 
+    let html =
         `<section class="section profile">
             <div class="card">
                 <header class="card-header">
@@ -273,9 +281,9 @@ export const handleEditProfileClick = function() {
 /*----------------------------------------- HOME TAB -------------------------------------------*/
 
 /* Handles when user clicks on Home tab in nav bar */
-export const handleHomeNavClick = function() {
+export const handleHomeNavClick = function () {
     $root.empty();
-    let html = 
+    let html =
         `<section class="section">
             <div class="container">
                 <div class="content">
@@ -329,10 +337,10 @@ export const handleHomeNavClick = function() {
                 </div>
             </div>
         </section>`;
-        $root.append(html);
+    $root.append(html);
 };
 
 
-$(function() {
+$(function () {
     setUp();
 });
