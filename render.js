@@ -3,7 +3,6 @@ import {
     loginAndGetStatus,
     createUser
 } from "./backend.js";
-import { rootCertificates } from "tls";
 
 export const $root = $('#root');
 

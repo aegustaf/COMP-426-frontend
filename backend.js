@@ -190,9 +190,9 @@ export async function createUserObject(bearer) {
     // console.log(data)
     // let data = await createUser("testMethod", "testMethod", "test", "method", "BS", 2019);
     // let data = await createUser("tm14", "pass", "tm6", "tm6", "BS", 2018)
-    let data = await loginAndSetJWT("tm11", "pass").then(() => {
-        addClass(localStorage.getItem("jwt"), "COMP110")
-    })
+    // let data = await loginAndSetJWT("tm11", "pass").then(() => {
+    //     addClass(localStorage.getItem("jwt"), "COMP110")
+    // })
     // let {
     //     data
     // } = await getClasses(localStorage.getItem("jwt"))
