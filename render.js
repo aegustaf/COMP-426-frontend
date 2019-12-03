@@ -3,10 +3,12 @@ import {
     loginAndGetStatus,
     createUser
 } from "./backend.js";
+import { rootCertificates } from "tls";
 
 export const $root = $('#root');
 
 export const setUp = function () {
+    renderHomePage();
     /* Click handlers for Login and Sign Up buttons */
     $(document).on("click", "#logo", handleHomeNavClick);
     $(document).on("click", "#loginButton", handleLoginButtonClick);
@@ -308,8 +310,7 @@ export const handleEditProfileClick = function () {
 
 /*----------------------------------------- HOME TAB -------------------------------------------*/
 
-/* Handles when user clicks on Home tab in nav bar */
-export const handleHomeNavClick = function () {
+export const renderHomePage = function() {
     $root.empty();
     let html =
         `<section class="section">
@@ -366,6 +367,11 @@ export const handleHomeNavClick = function () {
             </div>
         </section>`;
     $root.append(html);
+}
+
+/* Handles when user clicks on Home tab in nav bar */
+export const handleHomeNavClick = function () {
+    renderHomePage();
 };
 
 
