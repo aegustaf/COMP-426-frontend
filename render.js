@@ -35,8 +35,9 @@ export const handleLoginButtonClick = function () {
     renderLoginForm();
 };
 export const handleLoginSubmit = function () {
-    loginAndGetStatus("tm10", "pass")
-    console.log(localStorage.getItem("jwt"))
+    let username = $("#loginForm_username").val()
+    let password = $("#loginForm_password").val()
+    loginAndGetStatus(username, password)
 }
 export const renderLoginForm = function () {
     $root.empty();
@@ -53,13 +54,13 @@ export const renderLoginForm = function () {
                         <div class="field">
                             <label class="label">Username:</label>
                             <div class="control">
-                                <input class="input"  type="text">
+                                <input class="input"  type="text" id="loginForm_username">
                             </div>
                         </div>
                         <div class="field">
                             <label class="label">Password:</label>
                             <div class="control">
-                                <input class="input"  type="text">
+                                <input class="input"  type="password" id="loginForm_password">
                             </div>
                         </div>
                     </form>
