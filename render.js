@@ -1,6 +1,7 @@
 import {
     loginAndSetJWT,
-    loginAndGetStatus
+    loginAndGetStatus,
+    createUser
 } from "./backend.js";
 
 export const $root = $('#root');
@@ -12,7 +13,7 @@ export const setUp = function () {
     $(document).on("click", "#signupButton", handleSignUpButtonClick);
 
     $(document).on("click", "#submitLogin", handleLoginSubmit);
-    // $(document).on("click", "#submitSignup", handleSignUpSubmit);
+    $(document).on("click", "#submitSignup", handleSignUpSubmit);
 
 
     /* Click handlers for the 5 tabs in the navigation bar */
@@ -79,6 +80,32 @@ export const handleSignUpButtonClick = function () {
     renderSignUpForm();
 };
 
+export const handleSignUpSubmit = function () {
+    // Get form values
+    let username = $("#signupForm_username").val()
+    let password = $("#signupForm_lastname").val()
+    let year = $("#signupForm_year").val()
+    let firstname = $("#signupForm_firstname").val()
+    let lastname = $("#signupForm_lastname").val()
+
+    // CS TRACK
+    let ba = $("#BA:checked").val()
+    let bs = $("#BS:checked").val()
+    let minor = $("#Minor:checked").val()
+    let cstrack;
+    if (ba) {
+        cstrack = "BA"
+    } else if (bs) {
+        cstrack = "BS"
+    } else {
+        cstrack = "Minor"
+    }
+
+    // Create user 
+    createUser(username, password, firstname, lastname, cstrack, year)
+
+}
+
 export const renderSignUpForm = function () {
     $root.empty();
     let html =
@@ -94,40 +121,40 @@ export const renderSignUpForm = function () {
                     <div class="field">
                         <label class="label">Username:</label>
                         <div class="control">
-                            <input class="input"  type="text">
+                            <input class="input"  type="text" id="signupForm_username">
                         </div>
                     </div>
                     <div class="field">
                         <label class="label">Password:</label>
                         <div class="control">
-                            <input class="input"  type="text">
+                            <input class="input"  type="password" id="signupForm_password">
                         </div>
                     </div>
                     <div class="field">
                         <label class="label">First Name:</label>
                         <div class="control">
-                            <input class="input"  type="text">
+                            <input class="input"  type="text" id="signupForm_firstname">
                         </div>
                     </div>
                     <div class="field">
                         <label class="label">Last Name:</label>
                         <div class="control">
-                            <input class="input"  type="text">
+                            <input class="input"  type="text" id="signupForm_lastname">
                         </div>
                     </div>
                     <div class="field">
                         <label class="label">CS Track:</label>
-                        <div class="control">
+                        <div class="control" >
                             <label class="radio">
-                                <input type="radio" name="track" checked >
+                                <input type="radio" name="track" checked id="BA">
                                 COMP BA
                             </label>
                             <label class="radio">
-                                <input type="radio" name="track">
+                                <input type="radio" name="track" id="BS">
                                 COMP BS
                             </label>
                             <label class="radio">
-                                <input type="radio" name="track" >
+                                <input type="radio" name="track" id="Minor">
                                 COMP Minor
                             </label>
                         </div>
@@ -135,7 +162,7 @@ export const renderSignUpForm = function () {
                     <div class="field">
                         <label class="label">Graduation Year:</label>
                         <div class="control">
-                            <input class="input"  type="text">
+                            <input class="input"  type="text" id="signupForm_year">
                         </div>
                     </div>
                     
@@ -345,3 +372,11 @@ export const handleHomeNavClick = function () {
 $(function () {
     setUp();
 });
+
+
+/*----------------------------------------- MISCELLANEOUS -------------------------------------------*/
+export const logout = function () {
+    if (localStorage.getItem("jwt") != null) {
+        localStorage.removeItem("jwt")
+    }
+}
