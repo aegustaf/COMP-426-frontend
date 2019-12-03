@@ -1,4 +1,4 @@
-const server = "http://localhost:3000/"
+const server = "http://localhost:3000/";
 
 // Essentially a cookie but not quite. where I store the jwt token. Don't store it in a local variable as that isn't secure.
 let localStorage = window.localStorage;
