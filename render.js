@@ -262,6 +262,8 @@ export const handleProfileNavClick = function () {
 /* Renders user's profile card */
 export const renderProfile = function () {
     let user
+
+    console.log(localStorage.hasOwnProperty('jwt'));
     status(localStorage.getItem("jwt")).then( (result) => {
         user = result.data.user;
         $root.empty();
