@@ -83,11 +83,10 @@ export const handleLoginSubmit = function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
     loginAndGetStatus(username, password).then( () => {
+        // console.log("HERE I AM: " + localStorage.getItem("jwt"))
         // Customize site to user
         renderLoggedInContent();
     })
-
-    // renderLoggedInContent();
 }
 
 export const renderLoginForm = function () {
@@ -263,7 +262,7 @@ export const handleProfileNavClick = function () {
 export const renderProfile = function () {
     let user
 
-    console.log(localStorage.hasOwnProperty('jwt'));
+    // console.log(localStorage.hasOwnProperty('jwt'));
     status(localStorage.getItem("jwt")).then( (result) => {
         user = result.data.user;
         $root.empty();
