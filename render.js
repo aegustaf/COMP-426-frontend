@@ -54,7 +54,6 @@ export const renderLoggedInContent = function () {
                 <strong>Log out</strong>
             </a>`;
         $("#buttons").append(html);
-       
     })
 }
 
@@ -83,10 +82,12 @@ export const handleLoginButtonClick = function () {
 export const handleLoginSubmit = function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
-    loginAndGetStatus(username, password)
+    loginAndGetStatus(username, password).then( () => {
+        // Customize site to user
+        renderLoggedInContent();
+    })
 
-    // Customize site to user
-    renderLoggedInContent();
+    // renderLoggedInContent();
 }
 
 export const renderLoginForm = function () {
@@ -151,10 +152,13 @@ export const handleSignUpSubmit = function () {
     }
 
     // Create user 
-    createUser(username, password, firstname, lastname, cstrack, year)
+    createUser(username, password, firstname, lastname, cstrack, year).then( () => {
+        // Customize site to user
+        renderLoggedInContent();
+    })
 
     // Customize site to user
-    renderLoggedInContent();
+    // renderLoggedInContent();
 }
 
 export const renderSignUpForm = function () {
