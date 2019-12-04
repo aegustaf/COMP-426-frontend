@@ -45,12 +45,17 @@ export const renderLoggedInContent = function () {
     renderHomePage();
     $(".tab").css("visibility", "visible");
     $("#buttons").empty();
-    let html = 
-        `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, Amanda</h5></div>
-        <a class="button is-primary" id ="logoutButton">
-            <strong>Log out</strong>
-        </a>`;
-    $("#buttons").append(html);
+    let user
+    status(localStorage.getItem("jwt")).then( (result) => {
+        user = result.data.user;
+        let html = 
+            `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.data.firstname}!</h5></div>
+            <a class="button is-primary" id ="logoutButton">
+                <strong>Log out</strong>
+            </a>`;
+        $("#buttons").append(html);
+       
+    })
 }
 
 export const renderNonLoggedInContent = function () {
