@@ -86,6 +86,8 @@ export const handleLoginSubmit = function () {
         // console.log("HERE I AM: " + localStorage.getItem("jwt"))
         // Customize site to user
         renderLoggedInContent();
+        console.log("HERE I AM: " + localStorage.getItem("jwt"))
+
     })
 }
 
