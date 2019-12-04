@@ -6,11 +6,12 @@ import {
 } from "./backend.js";
 
 export const $root = $('#root');
-
-export const setUp = function () {
+let localStorage = window.localStorage;
+export const setUp = async function () {
     /* renders nav bar based on logged in or logged out */
-    if(localStorage.getItem("jwt") != null) {
-        renderLoggedInContent();
+    if (localStorage.getItem("jwt") != null) {
+        console.log("setUp: ", localStorage.getItem("jwt"))
+        await renderLoggedInContent();
     } else {
         renderNonLoggedInContent();
     }
@@ -41,27 +42,36 @@ export const setUp = function () {
 };
 
 /*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
-export const renderLoggedInContent = function () {
+export const renderLoggedInContent = async function () {
     renderHomePage();
     $(".tab").css("visibility", "visible");
     $("#buttons").empty();
-    let user
-    status(localStorage.getItem("jwt")).then( (result) => {
-        user = result.data.user;
-        let html = 
-            `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.data.firstname}!</h5></div>
-            <a class="button is-primary" id ="logoutButton">
-                <strong>Log out</strong>
-            </a>`;
-        $("#buttons").append(html);
-    })
+
+    let result = await status(localStorage.getItem("jwt"))
+    console.log(result)
+    let user = result.data.user
+    let html =
+        `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.data.firstname}!</h5></div>
+        <a class="button is-primary" id ="logoutButton">
+            <strong>Log out</strong>
+        </a>`;
+    $("#buttons").append(html);
+    // status(localStorage.getItem("jwt")).then((result) => {
+    //     user = result.data.user;
+    //     let html =
+    //         `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.data.firstname}!</h5></div>
+    //         <a class="button is-primary" id ="logoutButton">
+    //             <strong>Log out</strong>
+    //         </a>`;
+    //     $("#buttons").append(html);
+    // })
 }
 
 export const renderNonLoggedInContent = function () {
     renderHomePage();
     $(".tab").css("visibility", "hidden");
     $("#buttons").empty();
-    let html = 
+    let html =
         `<a class="button is-primary" id ="signupButton">
             <strong>Sign up</strong>
         </a>
@@ -79,16 +89,21 @@ export const handleLoginButtonClick = function () {
     renderLoginForm();
 };
 
-export const handleLoginSubmit = function () {
+export const handleLoginSubmit = async function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
-    loginAndGetStatus(username, password).then( () => {
-        // console.log("HERE I AM: " + localStorage.getItem("jwt"))
-        // Customize site to user
-        renderLoggedInContent();
-        console.log("HERE I AM: " + localStorage.getItem("jwt"))
+    console.log("before loginandgetstatus ", localStorage.getItem("jwt"))
+    await loginAndGetStatus(username, password)
+    console.log("after loginandgetstatus ", localStorage.getItem("jwt"))
 
-    })
+    // loginAndGetStatus(username, password).then( () => {
+    //     // console.log("HERE I AM: " + localStorage.getItem("jwt"))
+    //     // Customize site to user
+    //     renderLoggedInContent();
+    //     console.log("HERE I AM: " + localStorage.getItem("jwt"))
+
+    // })
+    await renderLoggedInContent()
 }
 
 export const renderLoginForm = function () {
@@ -131,7 +146,7 @@ export const handleSignUpButtonClick = function () {
     renderSignUpForm();
 };
 
-export const handleSignUpSubmit = function () {
+export const handleSignUpSubmit = async function () {
     // Get form values
     let username = $("#signupForm_username").val()
     let password = $("#signupForm_password").val()
@@ -152,14 +167,11 @@ export const handleSignUpSubmit = function () {
         cstrack = "Minor"
     }
 
-    // Create user 
-    createUser(username, password, firstname, lastname, cstrack, year).then( () => {
-        // Customize site to user
-        renderLoggedInContent();
-    })
 
+    // Create user 
+    await createUser(username, password, firstname, lastname, cstrack, year)
     // Customize site to user
-    // renderLoggedInContent();
+    await renderLoggedInContent()
 }
 
 export const renderSignUpForm = function () {
@@ -265,7 +277,7 @@ export const renderProfile = function () {
     let user
 
     // console.log(localStorage.hasOwnProperty('jwt'));
-    status(localStorage.getItem("jwt")).then( (result) => {
+    status(localStorage.getItem("jwt")).then((result) => {
         user = result.data.user;
         $root.empty();
         let html =
@@ -310,7 +322,7 @@ export const handleCancelEditProfileClick = function () {
 /* Handles when user clciks on edit button for their profile */
 export const handleEditProfileClick = function () {
     let user
-    status(localStorage.getItem("jwt")).then( (result) => {
+    status(localStorage.getItem("jwt")).then((result) => {
         user = result.data.user;
         $root.empty();
         let html =
@@ -368,24 +380,24 @@ export const handleEditProfileClick = function () {
                 </div>
             </section>`;
         $root.append(html);
-        if(user.data.cstrack == "BA") {
+        if (user.data.cstrack == "BA") {
             document.getElementById("BA").checked = true;
-        } else if(user.data.cstrack == "BS") {
+        } else if (user.data.cstrack == "BS") {
             document.getElementById("BS").checked = true;
-        } else if(user.data.cstrack == "Minor") {
+        } else if (user.data.cstrack == "Minor") {
             document.getElementById("Minor").checked = true;
         }
     })
 
 
 
-    
+
 };
 
 
 /*----------------------------------------- HOME TAB -------------------------------------------*/
 
-export const renderHomePage = function() {
+export const renderHomePage = function () {
     $root.empty();
     let html =
         `<section class="section">
@@ -462,5 +474,5 @@ export const logout = function () {
         localStorage.removeItem("jwt")
         renderNonLoggedInContent();
     }
-    
+
 }

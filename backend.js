@@ -56,27 +56,28 @@ export async function login(username, password) {
  * @returns name and other user related information 
  */
 export async function status(bearer) {
-    try {
-        const result = await axios({
-            method: 'get',
-            url: server + "account/status",
-            headers: {
-                Authorization: `Bearer ${bearer}`
-            }
-        })
-        return result;
-    } catch (e) {
-        return e
-    }
+    const result = await axios({
+        method: 'get',
+        url: server + "account/status",
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+    })
+
+    return result;
+
 }
 // END INTERNAL METHODS. USE STUFF BELOW THIS ========================================================
 
 export async function loginAndSetJWT(username, password) {
-    login(username, password).then(result => {
-        // Save the jwt token to the localstorage
-        localStorage.setItem("jwt", result.data.jwt);
-        return result;
-    })
+    let result = await login(username, password)
+    localStorage.setItem("jwt", result.data.jwt)
+    return result
+    // login(username, password).then(result => {
+    //     // Save the jwt token to the localstorage
+    //     localStorage.setItem("jwt", result.data.jwt);
+    //     return result;
+    // })
 }
 /**
  * 
@@ -85,30 +86,41 @@ export async function loginAndSetJWT(username, password) {
  * @returns data object. Stores the jwt token in the localstorage Storage object 
  */
 export async function loginAndGetStatus(username, password) {
-    // login
-    login(username, password).then(result => {
-        // Save the jwt token to the localstorage
-        localStorage.setItem("jwt", result.data.jwt);
-        // get the status and return it
-        status(result.data.jwt).then(res => {
-            return res;
-        })
-    })
+    let result = await login(username, password)
+    localStorage.setItem("jwt", result.data.jwt)
+    let res = await status(localStorage.getItem("jwt"))
+    return res
+
+    // // login
+    // login(username, password).then(result => {
+    //     // Save the jwt token to the localstorage
+    //     localStorage.setItem("jwt", result.data.jwt);
+    //     // get the status and return it
+    //     status(result.data.jwt).then(res => {
+    //         return res;
+    //     })
+    // })
 };
 
 export async function createUser(username, password, firstname, lastname, cstrack, gradyear) {
-    // Create the user in the backend and assign a unique jwt token
-    create(username, password, firstname, lastname, cstrack, gradyear).then(ret => {
-        // Login so that we set can get the jwt token
-        login(username, password).then(res => {
-            // Actually set the jwt token
-            localStorage.setItem("jwt", res.data.jwt)
-            // Create an empty user object in the users.json tree that we can append classes to
-            createUserObject(localStorage.getItem("jwt")).then(resp => {
-                return resp;
-            })
-        })
-    })
+    await create(username, password, firstname, lastname, cstrack, gradyear)
+    let res = await login(username, password)
+    localStorage.setItem("jwt", res.data.jwt)
+    let resp = await createUserObject(localStorage.getItem("jwt"))
+    return resp;
+
+    // // Create the user in the backend and assign a unique jwt token
+    // create(username, password, firstname, lastname, cstrack, gradyear).then(ret => {
+    //     // Login so that we set can get the jwt token
+    //     login(username, password).then(res => {
+    //         // Actually set the jwt token
+    //         localStorage.setItem("jwt", res.data.jwt)
+    //         // Create an empty user object in the users.json tree that we can append classes to
+    //         createUserObject(localStorage.getItem("jwt")).then(resp => {
+    //             return resp;
+    //         })
+    //     })
+    // })
 }
 
 /**
