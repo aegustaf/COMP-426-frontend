@@ -1,17 +1,26 @@
 import {
     loginAndSetJWT,
     loginAndGetStatus,
-    createUser
+    createUser,
+    status
 } from "./backend.js";
 
 export const $root = $('#root');
 
 export const setUp = function () {
-    renderHomePage();
-    /* Click handlers for Login and Sign Up buttons */
+    /* renders nav bar based on logged in or logged out */
+    if(localStorage.getItem("jwt") != null) {
+        renderLoggedInContent();
+    } else {
+        renderNonLoggedInContent();
+    }
+    /* clicking on logo takes you to homepage */
     $(document).on("click", "#logo", handleHomeNavClick);
+
+    /* Click handlers for Login, Sign Up, amnd Log Out buttons */
     $(document).on("click", "#loginButton", handleLoginButtonClick);
     $(document).on("click", "#signupButton", handleSignUpButtonClick);
+    $(document).on("click", "#logoutButton", logout);
 
     $(document).on("click", "#submitLogin", handleLoginSubmit);
     $(document).on("click", "#submitSignup", handleSignUpSubmit);
@@ -31,16 +40,50 @@ export const setUp = function () {
 
 };
 
+/*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
+export const renderLoggedInContent = function () {
+    renderHomePage();
+    $(".tab").css("visibility", "visible");
+    $("#buttons").empty();
+    let html = 
+        `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, Amanda</h5></div>
+        <a class="button is-primary" id ="logoutButton">
+            <strong>Log out</strong>
+        </a>`;
+    $("#buttons").append(html);
+}
+
+export const renderNonLoggedInContent = function () {
+    renderHomePage();
+    $(".tab").css("visibility", "hidden");
+    $("#buttons").empty();
+    let html = 
+        `<a class="button is-primary" id ="signupButton">
+            <strong>Sign up</strong>
+        </a>
+        <a class="button is-light" id ="loginButton">
+            Log in
+        </a>`;
+    $("#buttons").append(html);
+
+}
+
+
 /*----------------------------------------- LOGIN TAB -------------------------------------------*/
 
 export const handleLoginButtonClick = function () {
     renderLoginForm();
 };
+
 export const handleLoginSubmit = function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
     loginAndGetStatus(username, password)
+
+    // Customize site to user
+    renderLoggedInContent();
 }
+
 export const renderLoginForm = function () {
     $root.empty();
     let html =
@@ -105,6 +148,8 @@ export const handleSignUpSubmit = function () {
     // Create user 
     createUser(username, password, firstname, lastname, cstrack, year)
 
+    // Customize site to user
+    renderLoggedInContent();
 }
 
 export const renderSignUpForm = function () {
@@ -207,34 +252,38 @@ export const handleProfileNavClick = function () {
 
 /* Renders user's profile card */
 export const renderProfile = function () {
-    $root.empty();
-    let html =
-        `<section class="section profile">
-            <div class="card">
-                <header class="card-header">
-                <p class="card-header-title">
-                    My Profile
-                </p>
-                
-                </header>
-                <div class="card-content">
-                <div class="content">
-                        <b>Username:  </b>  aegustaf
-                        <br><br>
-                        <b>Name:  </b>  Amanda Gustafson
-                        <br><br>
-                        <b>CS Track: </b>  COMP BA
-                        <br><br>
-                        <b>Graduation Year: </b>  2020
-                        <br>
+    let user
+    status(localStorage.getItem("jwt")).then( (result) => {
+        user = result.data.user;
+        $root.empty();
+        let html =
+            `<section class="section profile">
+                <div class="card">
+                    <header class="card-header">
+                    <p class="card-header-title">
+                        My Profile
+                    </p>
+                    
+                    </header>
+                    <div class="card-content">
+                    <div class="content">
+                            <b>Username:  </b>   ${user.name}
+                            <br><br>
+                            <b>Name:  </b>   ${user.data.firstname} ${user.data.lastname}
+                            <br><br>
+                            <b>CS Track:  </b>   ${user.data.cstrack}
+                            <br><br>
+                            <b>Graduation Year:  </b>   ${user.data.gradyear}
+                            <br>
+                    </div>
+                    </div>
+                    <footer class="card-footer">
+                    <a href="#" class="card-footer-item" id="editProfile">Edit</a>
+                    </footer>
                 </div>
-                </div>
-                <footer class="card-footer">
-                <a href="#" class="card-footer-item" id="editProfile">Edit</a>
-                </footer>
-            </div>
-        </section>`;
-    $root.append(html);
+            </section>`;
+        $root.append(html);
+    })
 };
 
 export const handleSubmitEditProfileClick = function () {
@@ -248,62 +297,77 @@ export const handleCancelEditProfileClick = function () {
 
 /* Handles when user clciks on edit button for their profile */
 export const handleEditProfileClick = function () {
-    $root.empty();
-    let html =
-        `<section class="section profile">
-            <div class="card">
-                <header class="card-header">
-                <p class="card-header-title">
-                    Editting My Profile
-                </p>
-                </header>
-                <div class="card-content">
-                <form id="prfoileEditForm">
-                    <div class="field">
-                        <label class="label">First Name:</label>
-                        <div class="control">
-                            <input class="input"  type="text" value="Amanda">
+    let user
+    status(localStorage.getItem("jwt")).then( (result) => {
+        user = result.data.user;
+        $root.empty();
+        let html =
+            `<section class="section profile">
+                <div class="card">
+                    <header class="card-header">
+                    <p class="card-header-title">
+                        Editting My Profile
+                    </p>
+                    </header>
+                    <div class="card-content">
+                    <form id="prfoileEditForm">
+                        <div class="field">
+                            <label class="label">First Name:</label>
+                            <div class="control">
+                                <input class="input"  type="text" value="${user.data.firstname}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="field">
-                        <label class="label">Last Name:</label>
-                        <div class="control">
-                            <input class="input" type="text" value="Gustafson">
+                        <div class="field">
+                            <label class="label">Last Name:</label>
+                            <div class="control">
+                                <input class="input" type="text" value="${user.data.lastname}">
+                            </div>
                         </div>
-                    </div>
-                    <div class="field">
-                        <label class="label">CS Track:</label>
-                        <div class="control">
-                            <label class="radio">
-                                <input type="radio" name="track" checked>
-                                COMP BA
-                            </label>
-                            <label class="radio">
-                                <input type="radio" name="track">
-                                COMP BS
-                            </label>
-                            <label class="radio">
-                                <input type="radio" name="track" >
-                                COMP Minor
-                            </label>
+                        <div class="field">
+                            <label class="label">CS Track:</label>
+                            <div class="control">
+                                <label class="radio">
+                                    <input type="radio" name="track" id="BA">
+                                    COMP BA
+                                </label>
+                                <label class="radio">
+                                    <input type="radio" name="track" id="BS">
+                                    COMP BS
+                                </label>
+                                <label class="radio">
+                                    <input type="radio" name="track" id="Minor">
+                                    COMP Minor
+                                </label>
+                            </div>
                         </div>
-                    </div>
-                    <div class="field">
-                        <label class="label">Graduation Year:</label>
-                        <div class="control">
-                            <input class="input"  type="text" value="2020">
+                        <div class="field">
+                            <label class="label">Graduation Year:</label>
+                            <div class="control">
+                                <input class="input"  type="text" value="${user.data.gradyear}">
+                            </div>
                         </div>
+                        
+                    </form>
                     </div>
-                    
-                </form>
+                    <footer class="card-footer">
+                    <a href="#" class="card-footer-item" id="cancelProfile">Cancel</a>
+                    <a href="#" class="card-footer-item" id="submitProfile">Submit</a>
+                    </footer>
                 </div>
-                <footer class="card-footer">
-                <a href="#" class="card-footer-item" id="cancelProfile">Cancel</a>
-                <a href="#" class="card-footer-item" id="submitProfile">Submit</a>
-                </footer>
-            </div>
-        </section>`;
-    $root.append(html);
+            </section>`;
+        $root.append(html);
+        if(user.data.cstrack == "BA") {
+            document.getElementById("BA").checked = true;
+        } else if(user.data.cstrack == "BS") {
+            document.getElementById("BS").checked = true;
+        } else if(user.data.cstrack == "Minor") {
+            document.getElementById("Minor").checked = true;
+        }
+    })
+
+
+
+    
 };
 
 
@@ -380,8 +444,11 @@ $(function () {
 
 
 /*----------------------------------------- MISCELLANEOUS -------------------------------------------*/
+
 export const logout = function () {
     if (localStorage.getItem("jwt") != null) {
         localStorage.removeItem("jwt")
+        renderNonLoggedInContent();
     }
+    
 }

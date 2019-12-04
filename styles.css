@@ -6,3 +6,10 @@
     min-width: 300px;
     width: 500px;
 }
+.tab {
+    visibility: hidden;
+}
+#greeting {
+    cursor: auto;
+    border: none;
+}
