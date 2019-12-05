@@ -2,8 +2,11 @@ import {
     loginAndSetJWT,
     loginAndGetStatus,
     createUser,
+<<<<<<< HEAD
     status,
     getUserFields,
+=======
+>>>>>>> c296ae4743519472c64eeee522eacbaca5e84c4f
     getUserClasses,
     getClasses,
     addClass,
