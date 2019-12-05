@@ -6,6 +6,27 @@
     min-width: 300px;
     width: 500px;
 }
+div.complete-course {
+    width: 450px;
+    margin: 30px; 
+    height: 200px;   
+    border: 2px solid hsl(141, 53%, 53%);
+    box-shadow: 5px 10px hsl(141, 53%, 53%);
+}
+div.have-reqs-course {
+    margin: 30px;
+    width: 450px;
+    height: 200px;
+    border: 2px solid hsl(48, 100%, 67%);
+    box-shadow: 5px 10px hsl(48, 100%, 67%);
+}
+div.need-reqs-course {
+    width: 450px;
+    height: 200px;
+    margin: 30px;    
+    border: 2px solid hsl(348, 100%, 61%);
+    box-shadow: 5px 10px hsl(348, 100%, 61%);
+}
 .tab {
     visibility: hidden;
 }

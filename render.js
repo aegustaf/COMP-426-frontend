@@ -2,6 +2,9 @@ import {
     loginAndSetJWT,
     loginAndGetStatus,
     createUser,
+    getUserClasses,
+    getClasses,
+    addClass,
     status
 } from "./backend.js";
 
@@ -29,7 +32,7 @@ export const setUp = function () {
     /* Click handlers for the 5 tabs in the navigation bar */
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
-    $(document).on("click", "#progressNav", handleProgressNavClick);
+    $(document).on("click", ".progressNav", handleProgressNavClick);
     $(document).on("click", "#addNav", handleAddNavClick);
     $(document).on("click", "#findNav", handleFindNavClick);
 
@@ -241,6 +244,213 @@ export const handleFindNavClick = function () {
 
 /* Handles when user clicks on Progress tab in nav bar */
 export const handleProgressNavClick = function () {
+    console.log("handle progress nav click")
+    $root.empty();
+    
+    let jwt = localStorage.getItem("jwt");
+    getClasses(jwt).then((resp) => {
+        let allCourses = resp.data.result;
+        getUserClasses(jwt).then((body) => {
+            let userCourses = body.data.result;
+            status(jwt).then((response) => {
+                let userData = response.data;
+                let userTrack = userData.user.data.cstrack;
+                //TODO use userData to determine which screen to render
+                console.log(userTrack);
+                if (userTrack === "BA") {
+                    handleBA(userCourses, allCourses);
+                } else if (userTrack === "BS") {
+                    handleBS();
+                } else { // Minor
+                    handleMinor();
+                }
+            });
+        });
+    });
+    
+
+    
+    //TODO: Add course objects to page
+};
+
+// Returns string describing if they can take the class, or prereqs
+// Returns empty string if there are no pre-reqs remaining
+export const canTakeClass = function (course, userCourses) {
+    let response = "";
+    console.log(userCourses);
+    // Each ele represents a grouping of required reqs
+    for (let i = 0; i < course.prerequisites.length; i++) {
+        //TODO confirm delimiter
+        let reqs = course.prerequisites[i].split(",")
+        let hasReq = false;
+        for (let j = 0; j < reqs.length; j++) {
+            if (userCourses.includes(reqs[j])) {
+                hasReq = true;
+                break;
+            }
+        }
+
+        // Build string explaining reqs needed
+        if (!hasReq) {
+            if (response.length === 0) {
+                response += "You need "
+            } else {
+                response += " and "
+            }
+            if (reqs.length === 1) {
+                response += course.prerequisites[i];
+            } else {
+                response += "one of " + course.prerequisites[i]; 
+            }
+        }
+    }
+    return response;
+    
+}
+
+
+
+// Finds course in private store based on dept and num
+export const getCourseObject = function (name, courses) {
+    let rightCourse;
+    Object.keys(courses).forEach(function(key) {
+        let course = courses[key];
+        let dept = name.substring(0,4);
+        let num = parseInt(name.substring(4), 10);
+        if (course.department === dept && course.number === num) {
+            rightCourse = course;
+        }
+    });
+    return rightCourse;
+}
+
+export const handleBA = function (userCourses, allCourses) {
+    let html = `<div class="container has-text-centered"> 
+        <h1 class="title is-1"> Your Progress</h1>
+        <br/ >
+    </div>`;
+    /*
+    "COMP110": {
+            "department": "COMP",
+            "major": {"COMP": 0},
+            "number" : 110,
+            "prerequisites": [],
+            "name": "Introduction to Computer Science",
+            "description":"Introductory Computer Science class.",
+            "difficulty": "beginner",
+            "semester": "F19",
+            "instructor": "Kris Jordan", 
+            "isActive": true
+        },
+    */
+    // First level
+    let levelOne = '<div class="container">'
+    if (userCourses.includes("COMP110")) {
+        let course = getCourseObject("COMP110", allCourses);
+        console.log(course)
+        levelOne = levelOne + generateCompletedClass(course);
+    } else if (userCourses.includes("COMP116")) {
+        let course = getCourseObject("COMP116", allCourses);
+        levelOne = levelOne + generateCompletedClass(course);
+    } else {
+        let course = getCourseObject("COMP110", allCourses);
+        levelOne = levelOne + generateUncompletedClass(course);
+        levelOne = levelOne + `OR`
+        course = getCourseObject("COMP116", allCourses);
+        levelOne = levelOne + generateUncompletedClass(course);
+    }
+    // Close first level
+    levelOne = levelOne + '</div>';
+    html = html + levelOne;
+
+    // Second level
+    let levelTwo = '<div class="container">';
+    if (userCourses.includes("COMP401")) {
+
+    } else {
+        let course = getCourseObject("COMP401", allCourses);
+        levelTwo += generateUncompletedClass(course, userCourses);
+    }
+    levelTwo += '</div>';
+    html += levelTwo
+
+
+    $root.append(html);
+    
+
+};
+
+export const handleBS = function (userCourses) {
+
+}
+
+export const handleMinor = function (userCourses) {
+    let html = '';
+
+    
+};
+
+
+export const generateCompletedClass = function (course) {
+    console.log(course)
+    // Include: Button to uncomplete, class name/number, desc
+    let card = `<div class="card complete-course">
+        <div class="card-content">
+            <div class="title">
+                `+course.department + course.number +`
+            </div>
+            <div class="subtitle">
+                `+ course.name +`
+            </div>
+            <p>
+                `+ course.description+`
+            </p>
+        </div>
+    </div>
+    `;
+
+    return card;
+};
+
+export const generateUncompletedClass= function (course, userCourses) {
+    // Include: class name, prereqs (if they can take it or not), desc
+    let prereqs = canTakeClass(course, userCourses);
+    //All prereqs complete
+    if (prereqs.length === 0) {
+        return `<div class="card have-reqs-course">
+        <div class="card-content">
+            <div class="title">
+                `+course.department + course.number +`
+            </div>
+            <div class="subtitle">
+                `+ course.name +`
+            </div>
+            <p>
+                `+ course.description+`
+            </p>
+        </div>
+    </div>
+    `;
+    } else {
+        return `<div class="card need-reqs-course">
+        <div class="card-content">
+            <div class="title">
+                `+course.department + course.number +`
+            </div>
+            <div class="subtitle">
+                `+ course.name +`
+            </div>
+            <p>
+                `+ course.description+`
+            </p>
+            <p>
+            ` + prereqs + `
+            </p>
+        </div>
+    </div>
+    `;
+    }
+
 
 };
 
