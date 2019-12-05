@@ -2,11 +2,13 @@ import {
     loginAndSetJWT,
     loginAndGetStatus,
     createUser,
-    status
+    status,
+    getUserFields
 } from "./backend.js";
 
+
 export const $root = $('#root');
-let localStorage = window.localStorage;
+
 export const setUp = async function () {
     /* renders nav bar based on logged in or logged out */
     if (localStorage.getItem("jwt") != null) {
@@ -47,11 +49,10 @@ export const renderLoggedInContent = async function () {
     $(".tab").css("visibility", "visible");
     $("#buttons").empty();
 
-    let result = await status(localStorage.getItem("jwt"))
-    console.log(result)
-    let user = result.data.user
+    let result = await getUserFields(localStorage.getItem("jwt"))
+    let user = result.data.result
     let html =
-        `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.data.firstname}!</h5></div>
+        `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.firstname}!</h5></div>
         <a class="button is-primary" id ="logoutButton">
             <strong>Log out</strong>
         </a>`;
@@ -92,17 +93,7 @@ export const handleLoginButtonClick = function () {
 export const handleLoginSubmit = async function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
-    console.log("before loginandgetstatus ", localStorage.getItem("jwt"))
     await loginAndGetStatus(username, password)
-    console.log("after loginandgetstatus ", localStorage.getItem("jwt"))
-
-    // loginAndGetStatus(username, password).then( () => {
-    //     // console.log("HERE I AM: " + localStorage.getItem("jwt"))
-    //     // Customize site to user
-    //     renderLoggedInContent();
-    //     console.log("HERE I AM: " + localStorage.getItem("jwt"))
-
-    // })
     await renderLoggedInContent()
 }
 
@@ -273,15 +264,14 @@ export const handleProfileNavClick = function () {
 };
 
 /* Renders user's profile card */
-export const renderProfile = function () {
-    let user
-
-    // console.log(localStorage.hasOwnProperty('jwt'));
-    status(localStorage.getItem("jwt")).then((result) => {
-        user = result.data.user;
-        $root.empty();
-        let html =
-            `<section class="section profile">
+export const renderProfile = async function () {
+    let result = await getUserFields(localStorage.getItem("jwt"))
+    let stat = await status(localStorage.getItem("jwt"))
+    console.log("stat", stat)
+    let user = result.data.result;
+    $root.empty();
+    let html =
+        `<section class="section profile">
                 <div class="card">
                     <header class="card-header">
                     <p class="card-header-title">
@@ -291,13 +281,13 @@ export const renderProfile = function () {
                     </header>
                     <div class="card-content">
                     <div class="content">
-                            <b>Username:  </b>   ${user.name}
+                            <b>Username:  </b>   ${stat.data.user.name}
                             <br><br>
-                            <b>Name:  </b>   ${user.data.firstname} ${user.data.lastname}
+                            <b>Name:  </b>   ${user.firstname} ${user.lastname}
                             <br><br>
-                            <b>CS Track:  </b>   ${user.data.cstrack}
+                            <b>CS Track:  </b>   ${user.cstrack}
                             <br><br>
-                            <b>Graduation Year:  </b>   ${user.data.gradyear}
+                            <b>Graduation Year:  </b>   ${user.gradyear}
                             <br>
                     </div>
                     </div>
@@ -306,8 +296,10 @@ export const renderProfile = function () {
                     </footer>
                 </div>
             </section>`;
-        $root.append(html);
-    })
+    $root.append(html);
+
+
+
 };
 
 export const handleSubmitEditProfileClick = function () {
@@ -320,13 +312,14 @@ export const handleCancelEditProfileClick = function () {
 };
 
 /* Handles when user clciks on edit button for their profile */
-export const handleEditProfileClick = function () {
-    let user
-    status(localStorage.getItem("jwt")).then((result) => {
-        user = result.data.user;
-        $root.empty();
-        let html =
-            `<section class="section profile">
+export const handleEditProfileClick = async function () {
+    let result = await getUserFields(localStorage.getItem("jwt"))
+    console.log("edit click", result)
+    let user = result.data.result;
+    console.log("user", user)
+    $root.empty();
+    let html =
+        `<section class="section profile">
                 <div class="card">
                     <header class="card-header">
                     <p class="card-header-title">
@@ -338,13 +331,13 @@ export const handleEditProfileClick = function () {
                         <div class="field">
                             <label class="label">First Name:</label>
                             <div class="control">
-                                <input class="input"  type="text" value="${user.data.firstname}">
+                                <input class="input"  type="text" value="${user.firstname}">
                             </div>
                         </div>
                         <div class="field">
                             <label class="label">Last Name:</label>
                             <div class="control">
-                                <input class="input" type="text" value="${user.data.lastname}">
+                                <input class="input" type="text" value="${user.lastname}">
                             </div>
                         </div>
                         <div class="field">
@@ -367,7 +360,7 @@ export const handleEditProfileClick = function () {
                         <div class="field">
                             <label class="label">Graduation Year:</label>
                             <div class="control">
-                                <input class="input"  type="text" value="${user.data.gradyear}">
+                                <input class="input"  type="text" value="${user.gradyear}">
                             </div>
                         </div>
                         
@@ -379,19 +372,14 @@ export const handleEditProfileClick = function () {
                     </footer>
                 </div>
             </section>`;
-        $root.append(html);
-        if (user.data.cstrack == "BA") {
-            document.getElementById("BA").checked = true;
-        } else if (user.data.cstrack == "BS") {
-            document.getElementById("BS").checked = true;
-        } else if (user.data.cstrack == "Minor") {
-            document.getElementById("Minor").checked = true;
-        }
-    })
-
-
-
-
+    $root.append(html);
+    if (user.cstrack == "BA") {
+        document.getElementById("BA").checked = true;
+    } else if (user.cstrack == "BS") {
+        document.getElementById("BS").checked = true;
+    } else if (user.cstrack == "Minor") {
+        document.getElementById("Minor").checked = true;
+    }
 };
 
 

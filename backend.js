@@ -14,19 +14,13 @@ let localStorage = window.localStorage;
  * @param {string} cstrack {BS or BA}
  * @param {number} gradyear 
  */
-export async function create(username, password, firstname, lastname, cstrack, gradyear) {
+export async function create(username, password) {
     const result = await axios({
         method: 'post',
         url: server + "account/create",
         data: {
             name: username,
-            pass: password,
-            data: {
-                firstname: firstname,
-                lastname: lastname,
-                cstrack: cstrack,
-                gradyear: gradyear
-            }
+            pass: password
         }
     })
     return result.status;
@@ -73,11 +67,6 @@ export async function loginAndSetJWT(username, password) {
     let result = await login(username, password)
     localStorage.setItem("jwt", result.data.jwt)
     return result
-    // login(username, password).then(result => {
-    //     // Save the jwt token to the localstorage
-    //     localStorage.setItem("jwt", result.data.jwt);
-    //     return result;
-    // })
 }
 /**
  * 
@@ -90,37 +79,17 @@ export async function loginAndGetStatus(username, password) {
     localStorage.setItem("jwt", result.data.jwt)
     let res = await status(localStorage.getItem("jwt"))
     return res
-
-    // // login
-    // login(username, password).then(result => {
-    //     // Save the jwt token to the localstorage
-    //     localStorage.setItem("jwt", result.data.jwt);
-    //     // get the status and return it
-    //     status(result.data.jwt).then(res => {
-    //         return res;
-    //     })
-    // })
 };
 
 export async function createUser(username, password, firstname, lastname, cstrack, gradyear) {
-    await create(username, password, firstname, lastname, cstrack, gradyear)
+    await create(username, password)
     let res = await login(username, password)
     localStorage.setItem("jwt", res.data.jwt)
-    let resp = await createUserObject(localStorage.getItem("jwt"))
-    return resp;
-
-    // // Create the user in the backend and assign a unique jwt token
-    // create(username, password, firstname, lastname, cstrack, gradyear).then(ret => {
-    //     // Login so that we set can get the jwt token
-    //     login(username, password).then(res => {
-    //         // Actually set the jwt token
-    //         localStorage.setItem("jwt", res.data.jwt)
-    //         // Create an empty user object in the users.json tree that we can append classes to
-    //         createUserObject(localStorage.getItem("jwt")).then(resp => {
-    //             return resp;
-    //         })
-    //     })
-    // })
+    // let resp = await createUserObject(localStorage.getItem("jwt"))
+    // let ret = await populateUserFields(localStorage.getItem("jwt"), firstname, lastname, cstrack, gradyear)
+    await createUserObject(localStorage.getItem("jwt"))
+    await populateUserFields(localStorage.getItem("jwt"), firstname, lastname, cstrack, gradyear)
+    return res;
 }
 
 /**
@@ -159,9 +128,6 @@ export async function getUserClasses(bearer) {
     return result;
 }
 
-// May or may not actually add this functionality. MVP only requires us to be able to add classes. Potential Feature
-// async function removeClass();
-
 // This is where we will use the private store. I will put all of the classes in the private store under the classes label and we can query it only if we are logged in. 
 export async function getClasses(bearer) {
     const result = await axios({
@@ -188,10 +154,105 @@ export async function createUserObject(bearer) {
     return result;
 }
 
+// Populates the user route with the users personal information
+export async function populateUserFields(bearer, firstname, lastname, cstrack, gradyear) {
+    const result = await axios({
+        method: 'post',
+        url: server + "user/userData",
+        data: {
+            data: {
+                firstname: firstname,
+                lastname: lastname,
+                cstrack: cstrack,
+                gradyear: gradyear
+            }
+        },
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+    })
+    return result
+}
 
+// Get the specific user fields. Should return firstname, lastname, gradyear, cstrack
+export async function getUserFields(bearer) {
+    const result = await axios({
+        method: 'get',
+        url: server + "user/userData",
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+    })
+    return result
+}
+export async function editFirstname(bearer, firstname) {
+    const result = await axios({
+        method: 'post',
+        url: server + "user/userData/firstname",
+        data: {
+            data: firstname
+        },
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+
+    })
+    return result;
+}
+
+export async function editLastname(bearer, lastname) {
+    const result = await axios({
+        method: 'post',
+        url: server + "user/userData/lastname",
+        data: {
+            data: lastname
+        },
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+
+    })
+    return result;
+}
+
+export async function editCSTrack(bearer, cstrack) {
+    const result = await axios({
+        method: 'post',
+        url: server + "user/userData/cstrack",
+        data: {
+            data: cstrack
+        },
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+
+    })
+    return result;
+}
+
+export async function editGradYear(bearer, gradyear) {
+    const result = await axios({
+        method: 'post',
+        url: server + "user/userData/gradyear",
+        data: {
+            data: gradyear
+        },
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+
+    })
+    return result;
+}
 // ================= PLAYGROUND ==========================
 
 (async () => {
+    // let v = await createUser("testUpdate5", "pass", "testUpdate", "oldLastname", "BS", 2019)
+    // let v = await getUserFields(localStorage.getItem("jwt"))
+    // let v = await editFirstname(localStorage.getItem('jwt'), "yup the update is the best")
+    // let v = await editLastname(localStorage.getItem("jwt"), "woo lastname update works")
+    // console.log(v)
+    // let v = await editFirstname(localStorage.getItem("jwt"), "newFirstname")
     // let {
     //     data
     // } = await getUserClasses(localStorage.getItem("jwt"))
