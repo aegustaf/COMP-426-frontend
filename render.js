@@ -2,15 +2,11 @@ import {
     loginAndSetJWT,
     loginAndGetStatus,
     createUser,
-<<<<<<< HEAD
     status,
     getUserFields,
-=======
->>>>>>> c296ae4743519472c64eeee522eacbaca5e84c4f
     getUserClasses,
     getClasses,
     addClass,
-    status
 } from "./backend.js";
 
 
@@ -39,7 +35,7 @@ export const setUp = async function () {
     /* Click handlers for the 5 tabs in the navigation bar */
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
-    $(document).on("click", ".progressNav", handleProgressNavClick);
+    $(document).on("click", "#progressNav", handleProgressNavClick);
     $(document).on("click", "#addNav", handleAddNavClick);
     $(document).on("click", "#findNav", handleFindNavClick);
 
@@ -252,34 +248,25 @@ export const handleFindNavClick = function () {
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 
 /* Handles when user clicks on Progress tab in nav bar */
-export const handleProgressNavClick = function () {
+export const handleProgressNavClick = async function () {
     console.log("handle progress nav click")
-    $root.empty();
-    
+    $root.empty(); 
     let jwt = localStorage.getItem("jwt");
-    getClasses(jwt).then((resp) => {
-        let allCourses = resp.data.result;
-        getUserClasses(jwt).then((body) => {
-            let userCourses = body.data.result;
-            status(jwt).then((response) => {
-                let userData = response.data;
-                let userTrack = userData.user.data.cstrack;
-                //TODO use userData to determine which screen to render
-                console.log(userTrack);
-                if (userTrack === "BA") {
-                    handleBA(userCourses, allCourses);
-                } else if (userTrack === "BS") {
-                    handleBS();
-                } else { // Minor
-                    handleMinor();
-                }
-            });
-        });
-    });
-    
+    let resp = await getClasses(jwt);
+    let allCourses = resp.data.result;
+    let body = await getUserClasses(jwt);
+    let userCourses = body.data.result;
+    let response = await getUserFields(jwt);
+    let userData = response.data;
+    let userTrack = userData.result.cstrack;
+    if (userTrack === "BA") {
+        handleBA(userCourses, allCourses);
+    } else if (userTrack === "BS") {
+        handleBS();
+    } else { 
+        handleMinor();
+    }
 
-    
-    //TODO: Add course objects to page
 };
 
 // Returns string describing if they can take the class, or prereqs
@@ -363,10 +350,20 @@ export const handleBA = function (userCourses, allCourses) {
         levelOne = levelOne + generateCompletedClass(course);
     } else {
         let course = getCourseObject("COMP110", allCourses);
-        levelOne = levelOne + generateUncompletedClass(course);
+        levelOne = levelOne + generateUncompletedClass(course, userCourses);
         levelOne = levelOne + `OR`
         course = getCourseObject("COMP116", allCourses);
-        levelOne = levelOne + generateUncompletedClass(course);
+        levelOne = levelOne + generateUncompletedClass(course, userCourses);
+    } 
+    console.log("here");
+    if (userCourses.includes("MATH231")) {
+        let course = getCourseObject("MATH231", allCourses);
+        
+        levelOne = levelOne + generateCompletedClass(course);
+    } else {
+        let course = getCourseObject("MATH231", allCourses);
+        console.log("add level")
+        levelOne = levelOne + generateUncompletedClass(course, userCourses);
     }
     levelOne = levelOne + '</div>';
     html = html + levelOne;
