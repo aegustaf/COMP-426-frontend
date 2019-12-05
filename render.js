@@ -326,7 +326,7 @@ export const getCourseObject = function (name, courses) {
 
 export const handleBA = function (userCourses, allCourses) {
     let html = `<div class="container has-text-centered"> 
-        <h1 class="title is-1"> Your Progress</h1>
+        <h1 class="title is-1 is-marginless"> Your Progress</h1>
         <br/ >
     </div>`;
     /*
@@ -344,7 +344,7 @@ export const handleBA = function (userCourses, allCourses) {
         },
     */
     // First level
-    let levelOne = '<div class="container">'
+    let levelOne = '<div class="level">'
     if (userCourses.includes("COMP110")) {
         let course = getCourseObject("COMP110", allCourses);
         console.log(course)
@@ -359,20 +359,39 @@ export const handleBA = function (userCourses, allCourses) {
         course = getCourseObject("COMP116", allCourses);
         levelOne = levelOne + generateUncompletedClass(course);
     }
-    // Close first level
     levelOne = levelOne + '</div>';
     html = html + levelOne;
 
     // Second level
-    let levelTwo = '<div class="container">';
+    let levelTwo = '<div class="level">';
     if (userCourses.includes("COMP401")) {
-
+        let course = getCourseObject("COMP401", allCourses);
+        levelTwo += generateCompletedClass(course, userCourses);
     } else {
         let course = getCourseObject("COMP401", allCourses);
         levelTwo += generateUncompletedClass(course, userCourses);
     }
     levelTwo += '</div>';
     html += levelTwo
+
+    // Third Level
+    let levelThree = '<div class="level">';
+    if (userCourses.includes("COMP410")) {
+        let course = getCourseObject("COMP410", allCourses);
+        levelThree += generateCompletedClass(course, userCourses);
+    } else {
+        let course = getCourseObject("COMP410", allCourses);
+        levelThree += generateUncompletedClass(course, userCourses);
+    }
+    if (userCourses.includes("COMP411")) {
+        let course = getCourseObject("COMP411", allCourses);
+        levelThree += generateCompletedClass(course, userCourses);
+    } else {
+        let course = getCourseObject("COMP411", allCourses);
+        levelThree += generateUncompletedClass(course, userCourses);
+    }
+    levelThree += '</div>';
+    html += levelThree;
 
 
     $root.append(html);
@@ -394,13 +413,10 @@ export const handleMinor = function (userCourses) {
 export const generateCompletedClass = function (course) {
     console.log(course)
     // Include: Button to uncomplete, class name/number, desc
-    let card = `<div class="card complete-course">
+    let card = `<div class="card complete-course level-item">
         <div class="card-content">
-            <div class="title">
-                `+course.department + course.number +`
-            </div>
-            <div class="subtitle">
-                `+ course.name +`
+            <div class="title is-4 courseTitle is-marginless">
+                `+course.department + course.number + ": " + course.name  +`
             </div>
             <p>
                 `+ course.description+`
@@ -417,13 +433,10 @@ export const generateUncompletedClass= function (course, userCourses) {
     let prereqs = canTakeClass(course, userCourses);
     //All prereqs complete
     if (prereqs.length === 0) {
-        return `<div class="card have-reqs-course">
+        return `<div class="card have-reqs-course level-item">
         <div class="card-content">
-            <div class="title">
-                `+course.department + course.number +`
-            </div>
-            <div class="subtitle">
-                `+ course.name +`
+            <div class="title is-4 courseTitle is-marginless">
+                `+course.department + course.number + ": " + course.name  +`
             </div>
             <p>
                 `+ course.description+`
@@ -432,19 +445,17 @@ export const generateUncompletedClass= function (course, userCourses) {
     </div>
     `;
     } else {
-        return `<div class="card need-reqs-course">
+        return `<div class="card need-reqs-course level-item">
         <div class="card-content">
-            <div class="title">
-                `+course.department + course.number +`
+            <div class="title is-4 courseTitle is-marginless">
+                `+course.department + course.number + ": " + course.name  +`
             </div>
-            <div class="subtitle">
-                `+ course.name +`
-            </div>
+
             <p>
                 `+ course.description+`
             </p>
-            <p>
-            ` + prereqs + `
+            <p class="is-italic">
+            ` + prereqs + `.
             </p>
         </div>
     </div>
