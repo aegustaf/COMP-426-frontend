@@ -7,32 +7,37 @@
     width: 500px;
 }
 div.complete-course {
-
+    overflow: scroll;
     margin-right: 20px;  
     margin-left: 20px;  
     margin-top: 0px;
     margin-bottom: 0px;
-    height: 150px;   
+    padding: 0px;
+    height: 175px;   
     border: 2px solid hsl(141, 53%, 53%);
     box-shadow: 5px 10px hsl(141, 53%, 53%);
 }
 div.have-reqs-course {
-    margin-right: 20px;  
+    margin-right: 20px;
+    overflow: scroll;  
     margin-left: 20px;  
     margin-top: 0px;
     margin-bottom: 0px;
-  
-    height: 150px;
+    width: inherit;
+    padding: 0px;
+    height: 175px;
     border: 2px solid hsl(48, 100%, 67%);
     box-shadow: 5px 10px hsl(48, 100%, 67%);
 }
 div.need-reqs-course {
-
-    height: 150px;
+    overflow: scroll;
+    height: 175px;
+    width: inherit;
     margin-right: 20px;  
     margin-left: 20px;  
     margin-top: 0px;
     margin-bottom: 0px;
+    padding: 0px;
     border: 2px solid hsl(348, 100%, 61%);
     box-shadow: 5px 10px hsl(348, 100%, 61%);
 }
@@ -45,6 +50,15 @@ div.courseTitle {
     margin-left: 50px;
     margin-top: 0px;
     margin-bottom: 20px;
+}
+
+.columns {
+    margin-right: 50px;
+    margin-left: 50px;
+    margin-top: 0px;
+    padding-bottom: 20px;
+    margin-bottom: 40px;
+    
 }
 
 .tab {
