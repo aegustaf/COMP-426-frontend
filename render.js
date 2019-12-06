@@ -7,6 +7,10 @@ import {
     getUserClasses,
     getClasses,
     addClass,
+    editFirstname,
+    editLastname,
+    editCSTrack,
+    editGradYear
 } from "./backend.js";
 
 
@@ -266,9 +270,9 @@ export const handleProgressNavClick = async function () {
     if (userTrack === "BA") {
         handleBA(userCourses, allCourses);
     } else if (userTrack === "BS") {
-        handleBS();
+        handleBS(userCourses, allCourses);
     } else { 
-        handleMinor();
+        handleMinor(userCourses, allCourses);
     }
 
 };
@@ -564,8 +568,30 @@ export const renderProfile = async function () {
 
 };
 
-export const handleSubmitEditProfileClick = function () {
-
+export const handleSubmitEditProfileClick = async function () {
+    let firstName = document.getElementById("userFirstName").value;
+    let lastName = document.getElementById("userLastName").value;
+    
+    let ba = $("#BA:checked").val()
+    let bs = $("#BS:checked").val()
+    let minor = $("#Minor:checked").val()
+    let cstrack;
+    if (ba) {
+        cstrack = "BA"
+    } else if (bs) {
+        cstrack = "BS"
+    } else {
+        cstrack = "Minor"
+    }
+    let gradyear = document.getElementById("userGradYear").value;
+    
+    let jwt = localStorage.getItem("jwt")
+    await editFirstname(jwt, firstName)
+    await editLastname(jwt, lastName)
+    await editCSTrack(jwt, cstrack)
+    await editGradYear(jwt, gradyear)
+    
+    renderProfile()
 };
 
 /* Handles when user clicks cancel on profile edit form */
@@ -593,13 +619,13 @@ export const handleEditProfileClick = async function () {
                         <div class="field">
                             <label class="label">First Name:</label>
                             <div class="control">
-                                <input class="input"  type="text" value="${user.firstname}">
+                                <input class="input" id="userFirstName" type="text" value="${user.firstname}">
                             </div>
                         </div>
                         <div class="field">
                             <label class="label">Last Name:</label>
                             <div class="control">
-                                <input class="input" type="text" value="${user.lastname}">
+                                <input class="input" id="userLastName" type="text" value="${user.lastname}">
                             </div>
                         </div>
                         <div class="field">
@@ -622,7 +648,7 @@ export const handleEditProfileClick = async function () {
                         <div class="field">
                             <label class="label">Graduation Year:</label>
                             <div class="control">
-                                <input class="input"  type="text" value="${user.gradyear}">
+                                <input class="input" id="userGradYear" type="text" value="${user.gradyear}">
                             </div>
                         </div>
                         
