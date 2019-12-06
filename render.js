@@ -4,6 +4,9 @@ import {
     createUser,
     status,
     getUserFields,
+    getUserClasses,
+    getClasses,
+    addClass,
     editFirstname,
     editLastname,
     editCSTrack,
@@ -249,7 +252,266 @@ export const handleFindNavClick = function () {
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 
 /* Handles when user clicks on Progress tab in nav bar */
-export const handleProgressNavClick = function () {
+export const handleProgressNavClick = async function () {
+    console.log("handle progress nav click")
+    $root.empty(); 
+    $root.append(`<div class="container has-text-centered"> 
+        <h1 class="title is-1 is-marginless"> Your Progress</h1>
+        <br/ >
+    </div>`)
+    let jwt = localStorage.getItem("jwt");
+    let resp = await getClasses(jwt);
+    let allCourses = resp.data.result;
+    let body = await getUserClasses(jwt);
+    let userCourses = body.data.result;
+    let response = await getUserFields(jwt);
+    let userData = response.data;
+    let userTrack = userData.result.cstrack;
+    if (userTrack === "BA") {
+        handleBA(userCourses, allCourses);
+    } else if (userTrack === "BS") {
+        handleBS(userCourses, allCourses);
+    } else { 
+        handleMinor(userCourses, allCourses);
+    }
+
+};
+
+// Returns string describing if they can take the class, or prereqs
+// Returns empty string if there are no pre-reqs remaining
+export const canTakeClass = function (course, userCourses) {
+    let response = "";
+    console.log(userCourses);
+    // Each ele represents a grouping of required reqs
+    for (let i = 0; i < course.prerequisites.length; i++) {
+        //TODO confirm delimiter
+        let reqs = course.prerequisites[i].split(",")
+        let hasReq = false;
+        for (let j = 0; j < reqs.length; j++) {
+            if (userCourses.includes(reqs[j])) {
+                hasReq = true;
+                break;
+            }
+        }
+
+        // Build string explaining reqs needed
+        if (!hasReq) {
+            if (response.length === 0) {
+                response += "You need "
+            } else {
+                response += " and "
+            }
+            if (reqs.length === 1) {
+                response += course.prerequisites[i];
+            } else {
+                response += "one of " + course.prerequisites[i]; 
+            }
+        }
+    }
+    return response;
+    
+}
+
+
+
+// Finds course in private store based on dept and num
+export const getCourseObject = function (name, courses) {
+    let rightCourse;
+    Object.keys(courses).forEach(function(key) {
+        let course = courses[key];
+        let dept = name.substring(0,4);
+        let num = parseInt(name.substring(4), 10);
+        if (course.department === dept && course.number === num) {
+            rightCourse = course;
+        }
+    });
+    return rightCourse;
+}
+
+//TODO add param for isBA, comp classes against alt electives
+export const isCompElective = function (name) {
+    let dept = name.substring(0,4);
+    let num = parseInt(name.substring(4), 10);
+    return dept === "COMP" && num > 411;
+}
+
+// Gens html for rreqs consistent across majors/minors
+export const handleCoreRequirements = function (userCourses, allCourses) {
+    let html = '<div class="container">';
+    let levelOne = '<div class="container columns is-vcentered">'
+    if (userCourses.includes("COMP110")) {
+        let course = getCourseObject("COMP110", allCourses);
+        levelOne = levelOne + generateCompletedClass(course);
+    } else if (userCourses.includes("COMP116")) {
+        let course = getCourseObject("COMP116", allCourses);
+        levelOne = levelOne + generateCompletedClass(course);
+    } else {
+        let course = getCourseObject("COMP110", allCourses);
+        levelOne = levelOne + generateUncompletedClass(course, userCourses);
+        levelOne = levelOne + `OR`
+        course = getCourseObject("COMP116", allCourses);
+        levelOne = levelOne + generateUncompletedClass(course, userCourses);
+    } 
+    if (userCourses.includes("MATH231")) {
+        let course = getCourseObject("MATH231", allCourses);
+        
+        levelOne = levelOne + generateCompletedClass(course);
+    } else {
+        let course = getCourseObject("MATH231", allCourses);
+        levelOne = levelOne + generateUncompletedClass(course, userCourses);
+    }
+    levelOne = levelOne + '</div>';
+    html = html + levelOne;
+
+    // Second level
+    let levelTwo = '<div class="container columns is-vcentered">';
+    if (userCourses.includes("COMP401")) {
+        let course = getCourseObject("COMP401", allCourses);
+        levelTwo += generateCompletedClass(course, userCourses);
+    } else {
+        let course = getCourseObject("COMP401", allCourses);
+        levelTwo += generateUncompletedClass(course, userCourses);
+    }
+    levelTwo += '</div>';
+    html += levelTwo
+
+    // Third Level
+    let levelThree = '<div class="container columns is-vcentered">';
+    if (userCourses.includes("COMP410")) {
+        let course = getCourseObject("COMP410", allCourses);
+        levelThree += generateCompletedClass(course, userCourses);
+    } else {
+        let course = getCourseObject("COMP410", allCourses);
+        levelThree += generateUncompletedClass(course, userCourses);
+    }
+    if (userCourses.includes("COMP411")) {
+        let course = getCourseObject("COMP411", allCourses);
+        levelThree += generateCompletedClass(course, userCourses);
+    } else {
+        let course = getCourseObject("COMP411", allCourses);
+        levelThree += generateUncompletedClass(course, userCourses);
+    }
+    levelThree += '</div>';
+    html += levelThree;
+
+    return html;
+};
+
+// TODO customize for BA
+export const handleElectives = function (numElectives, userCourses) {
+    let electives = '<div class="container columns is-vcentered">';
+    let currElectives = 0;
+    for(let i = 0; i < userCourses.length; i++) {
+        if (isCompElective(userCourses[i])) {
+            currElectives++;
+            if ((currElectives - 1) % 3 === 0) {
+                electives += '</div> <div class="container columns is-vcentered">'
+            }
+            let course = getCourseObject(userCourses[i], allCourses);
+            electives += generateCompletedClass(course);
+
+        }
+    }
+
+    while (currElectives < numElectives) {
+        let fakeCourse = {
+            department: "COMP",
+            number: "???",
+            name: "COMP Elective",
+            description: "A COMP course numbered >= 426, not including COMP 495, 496, 691H, and 692H",
+            prerequisites: [],
+        }
+        currElectives++;
+        if ((currElectives - 1) % 3 === 0) {
+            electives += '</div> <div class="container columns is-vcentered">'
+        }
+
+        electives += generateUncompletedClass(fakeCourse, userCourses);
+    }
+    electives += '</div>';
+    return electives;
+}
+
+export const handleBA = function (userCourses, allCourses) {
+    let html = handleCoreRequirements(userCourses, allCourses);
+    // Fourth level: 6 total COMP electives
+    html += handleElectives(6, userCourses);
+    // 5th level: stor 155/psyc210/stor435
+    html += '</div>';
+    $root.append(html);
+};
+
+export const handleBS = function (userCourses) {
+    let html = handleCoreRequirements(userCourses, allCourses);
+    
+    // TODO: finish
+    html += '</div>';
+    $root.append(html);
+}
+
+export const handleMinor = function (userCourses) {
+    let html = handleCoreRequirements(userCourses, allCourses);
+    
+    html += handleElectives(2, userCourses);
+
+    html += '</div>';
+    $root.append(html);
+    
+};
+
+
+export const generateCompletedClass = function (course) {
+    console.log(course)
+    // Include: Button to uncomplete, class name/number, desc
+    let card = `<div class="card complete-course column">
+        <div class="card-content">
+            <div class="title is-4 courseTitle is-marginless">
+                `+course.department + course.number + ": " + course.name  +`
+            </div>
+            <p>
+                `+ course.description+`
+            </p>
+        </div>
+    </div>
+    `;
+
+    return card;
+};
+
+export const generateUncompletedClass= function (course, userCourses) {
+    // Include: class name, prereqs (if they can take it or not), desc
+    let prereqs = canTakeClass(course, userCourses);
+    //All prereqs complete
+    if (prereqs.length === 0) {
+        return `<div class="card have-reqs-course column">
+        <div class="card-content">
+            <div class="title is-4 courseTitle is-marginless">
+                `+course.department + course.number + ": " + course.name  +`
+            </div>
+            <p>
+                `+ course.description+`
+            </p>
+        </div>
+    </div>
+    `;
+    } else {
+        return `<div class="card need-reqs-course column">
+        <div class="card-content">
+            <div class="title is-4 courseTitle is-marginless">
+                `+course.department + course.number + ": " + course.name  +`
+            </div>
+
+            <p>
+                `+ course.description+`
+            </p>
+            <p class="is-italic">
+            ` + prereqs + `.
+            </p>
+        </div>
+    </div>
+    `;
+    }
+
 
 };
 
