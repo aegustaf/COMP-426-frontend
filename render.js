@@ -24,6 +24,14 @@ export const setUp = async function () {
     } else {
         renderNonLoggedInContent();
     }
+    /* hamburger nav menu functionality */
+    // Check for click events on the navbar burger icon
+    $(".navbar-burger").click(function() {
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        $(".navbar-burger").toggleClass("is-active");
+        $(".navbar-menu").toggleClass("is-active");
+    });
+
     /* clicking on logo takes you to homepage */
     $(document).on("click", "#logo", handleHomeNavClick);
 
@@ -53,30 +61,46 @@ export const setUp = async function () {
 /*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
 export const renderLoggedInContent = async function () {
     renderHomePage();
-    $(".tab").css("visibility", "visible");
+    // $(".tab").css("visibility", "visible");
+    $(".navbar-start").empty();
+    let html = 
+        `<a class="navbar-item tab" id="homeNav">
+            Home
+        </a>
+
+        <a class="navbar-item tab" id="profileNav">
+            Profile
+        </a>
+
+        <a class="navbar-item tab" id="progressNav">
+            Progress
+        </a>
+
+        <a class="navbar-item tab" id="addNav">
+            Add Completed Courses
+        </a>
+
+        <a class="navbar-item tab" id="findNav">
+            Find Courses
+        </a>`;
+
+    $(".navbar-start").append(html);
+
     $("#buttons").empty();
     let result = await getUserFields(localStorage.getItem("jwt"))
     let user = result.data.result
-    let html =
+    html =
         `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.firstname}!</h5></div>
         <a class="button is-primary" id ="logoutButton">
             <strong>Log out</strong>
         </a>`;
     $("#buttons").append(html);
-    // status(localStorage.getItem("jwt")).then((result) => {
-    //     user = result.data.user;
-    //     let html =
-    //         `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.data.firstname}!</h5></div>
-    //         <a class="button is-primary" id ="logoutButton">
-    //             <strong>Log out</strong>
-    //         </a>`;
-    //     $("#buttons").append(html);
-    // })
 }
 
 export const renderNonLoggedInContent = function () {
     renderHomePage();
-    $(".tab").css("visibility", "hidden");
+    // $(".tab").css("visibility", "hidden");
+    $(".navbar-start").empty();
     $("#buttons").empty();
     let html =
         `<a class="button is-primary" id ="signupButton">
