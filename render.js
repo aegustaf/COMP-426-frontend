@@ -55,7 +55,6 @@ export const renderLoggedInContent = async function () {
     renderHomePage();
     $(".tab").css("visibility", "visible");
     $("#buttons").empty();
-
     let result = await getUserFields(localStorage.getItem("jwt"))
     let user = result.data.result
     let html =
@@ -245,8 +244,47 @@ export const renderSignUpForm = function () {
 /*----------------------------------------- FIND CLASSES TAB -------------------------------------------*/
 
 /* Handles when user clicks on Find Classes tab in nav bar */
-export const handleFindNavClick = function () {
+export const handleFindNavClick = async function () {
+    $root.empty();
+    let token = localStorage.getItem("jwt");
+    let classes;
+    await getClasses(token).then(res=>{
+        classes = new Map(Object.entries(res.data.result))          
+    })
+    let classNames = Array.from(classes.keys()) //array of class names
+    let html = `<div class="field has-addons" style="justify-content: center">
+    <div class="control">
+      <input class="input" type="text" placeholder="Find a class" id="search-input">
+    </div>
+    <div class="control">
+      <a class="button is-info">
+        Search
+      </a>
+    </div>
+  </div><div class ="columns is-mobile is-multiline"></div>`           
+    $root.append(html)
 
+    classes.forEach(elem=>{
+        console.log(elem)
+        let classCard = `<div class="card" style="width: 30%; margin: 1%">
+        <header class="card-header">
+          <p class="card-header-title" style="justify-content: center">
+            ${elem.department} ${elem.number}
+          </p>
+        </header>
+        <div class="card-content">
+          <div class="content">
+          <p class="subtitle">${elem.name}</p>
+            Instructor: ${elem.instructor} 
+          </div>
+        </div>
+        <footer class="card-footer">
+          <a href="" class="card-footer-item">Add</a>
+          <a href="" class="card-footer-item">Remove</a>
+        </footer>
+      </div>`
+        $(".columns").append(classCard)
+    })
 };
 
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/

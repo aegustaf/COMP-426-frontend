@@ -183,7 +183,7 @@ export async function getUserFields(bearer) {
             Authorization: `Bearer ${bearer}`
         }
     })
-    return result
+    return result;
 }
 export async function editFirstname(bearer, firstname) {
     const result = await axios({
