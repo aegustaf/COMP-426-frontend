@@ -13,7 +13,6 @@ import {
     editGradYear
 } from "./backend.js";
 
-
 export const $root = $('#root');
 
 export const setUp = async function () {
@@ -247,12 +246,18 @@ export const renderSignUpForm = function () {
 export const handleFindNavClick = async function () {
     $root.empty();
     let token = localStorage.getItem("jwt");
-    let classes;
+    let classes;    //list of classes
+    let userClasses;    //list of classes user has added to their profile
     await getClasses(token).then(res=>{
         classes = new Map(Object.entries(res.data.result))          
     })
     let classNames = Array.from(classes.keys()) //array of class names
-    let html = `<div class="field has-addons" style="justify-content: center">
+    await getUserClasses(token).then(elem=>{
+        userClasses = (elem.data.result)
+    })
+
+    //adds searchbar
+    let html = `<div class="field has-addons" style="justify-content: center; margin-top: 2%">
     <div class="control">
       <input class="input" type="text" placeholder="Find a class" id="search-input">
     </div>
@@ -262,30 +267,82 @@ export const handleFindNavClick = async function () {
       </a>
     </div>
   </div><div class ="columns is-mobile is-multiline"></div>`           
-    $root.append(html)
+    $root.append(html)  
 
+    //adds each course 
     classes.forEach(elem=>{
-        console.log(elem)
-        let classCard = `<div class="card" style="width: 30%; margin: 1%">
-        <header class="card-header">
-          <p class="card-header-title" style="justify-content: center">
-            ${elem.department} ${elem.number}
-          </p>
-        </header>
-        <div class="card-content">
-          <div class="content">
-          <p class="subtitle">${elem.name}</p>
-            Instructor: ${elem.instructor} 
-          </div>
-        </div>
-        <footer class="card-footer">
-          <a href="" class="card-footer-item">Add</a>
-          <a href="" class="card-footer-item">Remove</a>
-        </footer>
-      </div>`
-        $(".columns").append(classCard)
+        if(userClasses.includes(elem.name)){
+            renderAddedClass(elem)
+        }else{
+            renderNewClass(elem);
+            $(`#classAdd${elem.number}`).on("click", {param1: `${token}`, param2: `${elem.name}`}, classAddition)  
+        }
     })
 };
+
+export const renderAddedClass = function(elem){
+    let classCard = `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
+        <header class="card-header">
+        <p class="card-header-title" style="justify-content: center">
+    ${elem.department} ${elem.number}
+    </p>
+    <button class="delete" id= "delete${elem.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>
+        </header>
+        <div class="card-content">
+    <div class="content">
+    <p class="subtitle">${elem.name}</p>
+    Instructor: ${elem.instructor} 
+    </div>
+    </div>
+    </div>`;
+    $(".columns").append(classCard)
+
+}
+
+export const renderNewClass = function(elem){
+    let classCard= `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
+    <header class="card-header">
+    <p class="card-header-title" style="justify-content: center">
+        ${elem.department} ${elem.number}
+    </p>
+    <a id ="classAdd${elem.number}" style = "visibility: visible" class="add ${elem.number}"><span class="icon">
+    <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
+    </span></a>
+    </header>
+    <div class="card-content">
+    <div class="content">
+    <p class="subtitle">${elem.name}</p>
+    Instructor: ${elem.instructor} 
+     </div>
+    </div>
+    </div>`
+    $(".columns").append(classCard);
+}
+
+export const classAddition = async function(event){
+    let token = event.data.param1;
+    let name = event.data.param2;
+    let classObj;
+    await addClass(token, name)
+    await getClassObj(token, name).then(elem=>{
+        classObj = elem;
+    });
+    $(`a.${classObj.number}`).replaceWith(`<button class="delete" id= "delete${classObj.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
+}
+
+export const getClassObj = async function(token, name){
+    let classes;
+    let course;
+    await getClasses(token).then(res=>{
+        classes = new Map(Object.entries(res.data.result))          
+    })
+    classes.forEach(elem=>{
+        if(elem.name === name){
+            course = elem;
+        }
+    })
+    return course;
+} 
 
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 
