@@ -63,6 +63,7 @@ export async function status(bearer) {
 }
 // END INTERNAL METHODS. USE STUFF BELOW THIS ========================================================
 
+
 export async function loginAndSetJWT(username, password) {
     let result = await login(username, password)
     localStorage.setItem("jwt", result.data.jwt)
@@ -81,25 +82,24 @@ export async function loginAndGetStatus(username, password) {
     return res
 };
 
-export async function createUser(username, password, firstname, lastname, cstrack, gradyear) {
+export async function createUser(username, password, firstname, lastname, cstrack, gradyear, email) {
     await create(username, password)
     let res = await login(username, password)
     localStorage.setItem("jwt", res.data.jwt)
     // let resp = await createUserObject(localStorage.getItem("jwt"))
     // let ret = await populateUserFields(localStorage.getItem("jwt"), firstname, lastname, cstrack, gradyear)
     await createUserObject(localStorage.getItem("jwt"))
-    await populateUserFields(localStorage.getItem("jwt"), firstname, lastname, cstrack, gradyear)
+    await populateUserFields(localStorage.getItem("jwt"), firstname, lastname, cstrack, gradyear, email)
     return res;
 }
 
+//Calls a 3rd party API https://mailboxlayer.com/documentation
 export async function verifyEmail(email){
     //const access_key = "818747c61f4898480de42012655d607e"
-
     try {
         const result = await axios({
             method: 'post',
             url: "https://apilayer.net/api/check?access_key=818747c61f4898480de42012655d607e&email="+email,
-
         })
         //console.log(result.data);
         return (result.data.format_valid&&result.data.smtp_check);
@@ -175,7 +175,7 @@ export async function createUserObject(bearer) {
 }
 
 // Populates the user route with the users personal information
-export async function populateUserFields(bearer, firstname, lastname, cstrack, gradyear) {
+export async function populateUserFields(bearer, firstname, lastname, cstrack, gradyear, email) {
     const result = await axios({
         method: 'post',
         url: server + "user/userData",
@@ -184,13 +184,15 @@ export async function populateUserFields(bearer, firstname, lastname, cstrack, g
                 firstname: firstname,
                 lastname: lastname,
                 cstrack: cstrack,
-                gradyear: gradyear
+                gradyear: gradyear,
+                email: email,
             }
         },
         headers: {
             Authorization: `Bearer ${bearer}`
         }
     })
+    console.log(result);
     return result
 }
 

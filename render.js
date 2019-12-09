@@ -194,7 +194,7 @@ export const handleSignUpSubmit = async function () {
         alert("You did not enter a valid email");
     }else{
         // Create user 
-        await createUser(username, password, firstname, lastname, cstrack, year)
+        await createUser(username, password, firstname, lastname, cstrack, year, email)
         // Customize site to user
         await renderLoggedInContent()
     }
