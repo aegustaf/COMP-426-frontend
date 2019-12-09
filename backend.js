@@ -92,6 +92,26 @@ export async function createUser(username, password, firstname, lastname, cstrac
     return res;
 }
 
+export async function verifyEmail(email){
+    //const access_key = "818747c61f4898480de42012655d607e"
+
+    try {
+        const result = await axios({
+            method: 'post',
+            url: "https://apilayer.net/api/check?access_key=818747c61f4898480de42012655d607e&email="+email,
+
+        })
+        //console.log(result.data);
+        return (result.data.format_valid&&result.data.smtp_check);
+    } catch (error) {
+        console.log(error);
+    }
+    return false;
+    
+}
+
+
+
 /**
  * 
  * @param {string} bearer jwt token

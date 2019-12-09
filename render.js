@@ -2,6 +2,7 @@ import {
     loginAndSetJWT,
     loginAndGetStatus,
     createUser,
+    verifyEmail,
     status,
     getUserFields,
     getUserClasses,
@@ -173,6 +174,7 @@ export const handleSignUpSubmit = async function () {
     let year = $("#signupForm_year").val()
     let firstname = $("#signupForm_firstname").val()
     let lastname = $("#signupForm_lastname").val()
+    let email = $("#signupForm_email").val()
 
     // CS TRACK
     let ba = $("#BA:checked").val()
@@ -187,11 +189,16 @@ export const handleSignUpSubmit = async function () {
         cstrack = "Minor"
     }
 
+    
+    if(!await verifyEmail(email)){
+        alert("You did not enter a valid email");
+    }else{
+        // Create user 
+        await createUser(username, password, firstname, lastname, cstrack, year)
+        // Customize site to user
+        await renderLoggedInContent()
+    }
 
-    // Create user 
-    await createUser(username, password, firstname, lastname, cstrack, year)
-    // Customize site to user
-    await renderLoggedInContent()
 }
 
 export const renderSignUpForm = function () {
@@ -228,6 +235,12 @@ export const renderSignUpForm = function () {
                         <label class="label">Last Name:</label>
                         <div class="control">
                             <input class="input"  type="text" id="signupForm_lastname">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Email (optional):</label>
+                        <div class="control">
+                            <input class="input"  type="text" id="signupForm_email">
                         </div>
                     </div>
                     <div class="field">
