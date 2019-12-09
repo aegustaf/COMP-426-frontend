@@ -92,26 +92,43 @@ export async function createUser(username, password, firstname, lastname, cstrac
     return res;
 }
 
-export async function verifyEmail(email){
+export async function verifyEmail(email) {
     //const access_key = "818747c61f4898480de42012655d607e"
 
     try {
         const result = await axios({
             method: 'post',
-            url: "https://apilayer.net/api/check?access_key=818747c61f4898480de42012655d607e&email="+email,
+            url: "https://apilayer.net/api/check?access_key=818747c61f4898480de42012655d607e&email=" + email,
 
         })
         //console.log(result.data);
-        return (result.data.format_valid&&result.data.smtp_check);
+        return (result.data.format_valid && result.data.smtp_check);
     } catch (error) {
         console.log(error);
     }
     return false;
-    
+
 }
 
+export async function addUsernameToPublicRoute(username) {
+    const result = await axios({
+        method: 'post',
+        url: server + "public/users",
+        data: {
+            "data": username,
+            "type": "merge"
+        },
+    })
+    return
+}
 
-
+export async function getUsersFromPublic() {
+    const result = await axios({
+        method: 'get',
+        url: server + "public/users"
+    })
+    return result;
+}
 /**
  * 
  * @param {string} bearer jwt token
@@ -291,6 +308,12 @@ export async function deleteClass(bearer, classname) {
 // ================= PLAYGROUND ==========================
 
 (async () => {
+    let v = await getUsersFromPublic()
+    console.log("users ", v)
+    await addUsernameToPublicRoute("testuser123")
+    v = await getUsersFromPublic()
+    console.log("users", v)
+
     // let v = await createUser("testDelete", "pass", "testUpdate", "oldLastname", "BS", 2019)
     // await addClass(localStorage.getItem("jwt"), "COMP110")
     // await addClass(localStorage.getItem("jwt"), "COMP401")
