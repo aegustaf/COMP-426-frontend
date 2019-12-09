@@ -244,10 +244,40 @@ export async function editGradYear(bearer, gradyear) {
     })
     return result;
 }
+
+// Brute force way of deleting a class from the user route
+export async function deleteClass(bearer, classname) {
+    let result = await getUserClasses(bearer)
+    let classes = result.data.result
+    let remaining = []
+    for (let i = 0; i < classes.length; i++) {
+        if (classes[i] == classname || classes[i] == null) {
+            continue
+        }
+        remaining.push(classes[i])
+    }
+    const res = await axios({
+        method: 'post',
+        url: server + "user/classes",
+        data: {
+            "data": remaining
+        },
+        headers: {
+            Authorization: `Bearer ${bearer}`
+        }
+    })
+    return res;
+}
 // ================= PLAYGROUND ==========================
 
 (async () => {
-    // let v = await createUser("testUpdate5", "pass", "testUpdate", "oldLastname", "BS", 2019)
+    // let v = await createUser("testDelete", "pass", "testUpdate", "oldLastname", "BS", 2019)
+    // await addClass(localStorage.getItem("jwt"), "COMP110")
+    // await addClass(localStorage.getItem("jwt"), "COMP401")
+    // await addClass(localStorage.getItem("jwt"), "COMP410")
+
+    // await deleteClass(localStorage.getItem("jwt"), "COMP110")
+
     // let v = await getUserFields(localStorage.getItem("jwt"))
     // let v = await editFirstname(localStorage.getItem('jwt'), "yup the update is the best")
     // let v = await editLastname(localStorage.getItem("jwt"), "woo lastname update works")
