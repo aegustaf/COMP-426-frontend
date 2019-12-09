@@ -13,7 +13,6 @@ import {
     editGradYear
 } from "./backend.js";
 
-
 export const $root = $('#root');
 
 export const setUp = async function () {
@@ -24,6 +23,14 @@ export const setUp = async function () {
     } else {
         renderNonLoggedInContent();
     }
+    /* hamburger nav menu functionality */
+    // Check for click events on the navbar burger icon
+    $(".navbar-burger").click(function() {
+        // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
+        $(".navbar-burger").toggleClass("is-active");
+        $(".navbar-menu").toggleClass("is-active");
+    });
+
     /* clicking on logo takes you to homepage */
     $(document).on("click", "#logo", handleHomeNavClick);
 
@@ -53,31 +60,46 @@ export const setUp = async function () {
 /*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
 export const renderLoggedInContent = async function () {
     renderHomePage();
-    $(".tab").css("visibility", "visible");
-    $("#buttons").empty();
+    // $(".tab").css("visibility", "visible");
+    $(".navbar-start").empty();
+    let html = 
+        `<a class="navbar-item tab" id="homeNav">
+            Home
+        </a>
 
+        <a class="navbar-item tab" id="profileNav">
+            Profile
+        </a>
+
+        <a class="navbar-item tab" id="progressNav">
+            Progress
+        </a>
+
+        <a class="navbar-item tab" id="addNav">
+            Add Completed Courses
+        </a>
+
+        <a class="navbar-item tab" id="findNav">
+            Find Courses
+        </a>`;
+
+    $(".navbar-start").append(html);
+
+    $("#buttons").empty();
     let result = await getUserFields(localStorage.getItem("jwt"))
     let user = result.data.result
-    let html =
+    html =
         `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.firstname}!</h5></div>
         <a class="button is-primary" id ="logoutButton">
             <strong>Log out</strong>
         </a>`;
     $("#buttons").append(html);
-    // status(localStorage.getItem("jwt")).then((result) => {
-    //     user = result.data.user;
-    //     let html =
-    //         `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.data.firstname}!</h5></div>
-    //         <a class="button is-primary" id ="logoutButton">
-    //             <strong>Log out</strong>
-    //         </a>`;
-    //     $("#buttons").append(html);
-    // })
 }
 
 export const renderNonLoggedInContent = function () {
     renderHomePage();
-    $(".tab").css("visibility", "hidden");
+    // $(".tab").css("visibility", "hidden");
+    $(".navbar-start").empty();
     $("#buttons").empty();
     let html =
         `<a class="button is-primary" id ="signupButton">
@@ -245,9 +267,106 @@ export const renderSignUpForm = function () {
 /*----------------------------------------- FIND CLASSES TAB -------------------------------------------*/
 
 /* Handles when user clicks on Find Classes tab in nav bar */
-export const handleFindNavClick = function () {
+export const handleFindNavClick = async function () {
+    $root.empty();
+    let token = localStorage.getItem("jwt");
+    let classes;    //list of classes
+    let userClasses;    //list of classes user has added to their profile
+    await getClasses(token).then(res=>{
+        classes = new Map(Object.entries(res.data.result))          
+    })
+    let classNames = Array.from(classes.keys()) //array of class names
+    await getUserClasses(token).then(elem=>{
+        userClasses = (elem.data.result)
+    })
 
+    //adds searchbar
+    let html = `<div class="field has-addons" style="justify-content: center; margin-top: 2%">
+    <div class="control">
+      <input class="input" type="text" placeholder="Find a class" id="search-input">
+    </div>
+    <div class="control">
+      <a class="button is-info">
+        Search
+      </a>
+    </div>
+  </div><div class ="columns is-mobile is-multiline"></div>`           
+    $root.append(html)  
+
+    //adds each course 
+    classes.forEach(elem=>{
+        if(userClasses.includes(elem.name)){
+            renderAddedClass(elem)
+        }else{
+            renderNewClass(elem);
+            $(`#classAdd${elem.number}`).on("click", {param1: `${token}`, param2: `${elem.name}`}, classAddition)  
+        }
+    })
 };
+
+export const renderAddedClass = function(elem){
+    let classCard = `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
+        <header class="card-header">
+        <p class="card-header-title" style="justify-content: center">
+    ${elem.department} ${elem.number}
+    </p>
+    <button class="delete" id= "delete${elem.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>
+        </header>
+        <div class="card-content">
+    <div class="content">
+    <p class="subtitle">${elem.name}</p>
+    Instructor: ${elem.instructor} 
+    </div>
+    </div>
+    </div>`;
+    $(".columns").append(classCard)
+
+}
+
+export const renderNewClass = function(elem){
+    let classCard= `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
+    <header class="card-header">
+    <p class="card-header-title" style="justify-content: center">
+        ${elem.department} ${elem.number}
+    </p>
+    <a id ="classAdd${elem.number}" style = "visibility: visible" class="add ${elem.number}"><span class="icon">
+    <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
+    </span></a>
+    </header>
+    <div class="card-content">
+    <div class="content">
+    <p class="subtitle">${elem.name}</p>
+    Instructor: ${elem.instructor} 
+     </div>
+    </div>
+    </div>`
+    $(".columns").append(classCard);
+}
+
+export const classAddition = async function(event){
+    let token = event.data.param1;
+    let name = event.data.param2;
+    let classObj;
+    await addClass(token, name)
+    await getClassObj(token, name).then(elem=>{
+        classObj = elem;
+    });
+    $(`a.${classObj.number}`).replaceWith(`<button class="delete" id= "delete${classObj.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
+}
+
+export const getClassObj = async function(token, name){
+    let classes;
+    let course;
+    await getClasses(token).then(res=>{
+        classes = new Map(Object.entries(res.data.result))          
+    })
+    classes.forEach(elem=>{
+        if(elem.name === name){
+            course = elem;
+        }
+    })
+    return course;
+} 
 
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 
