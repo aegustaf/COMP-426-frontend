@@ -322,9 +322,10 @@ export const handleFindNavClick = async function () {
             renderAddedClass(elem)
         } else {
             renderNewClass(elem);
+            console.log(elem);
             $(`#classAdd${elem.number}`).on("click", {
                 param1: `${token}`,
-                param2: `${elem.name}`
+                param2: `${elem.department}` +`${elem.number}`
             }, classAddition)
         }
     })
@@ -371,12 +372,14 @@ export const renderNewClass = function (elem) {
 
 export const classAddition = async function (event) {
     let token = event.data.param1;
+    console.log(event.data);
     let name = event.data.param2;
+    console.log(name)
     let classObj;
     await addClass(token, name)
-    await getClassObj(token, name).then(elem => {
-        classObj = elem;
-    });
+    let courses = await getClasses(token)
+    courses = courses.data.result;
+    classObj = await getCourseObject(name, courses);
     $(`a.${classObj.number}`).replaceWith(`<button class="delete" id= "delete${classObj.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
 }
 
@@ -473,11 +476,16 @@ export const getCourseObject = function (name, courses) {
     return rightCourse;
 }
 
-//TODO add param for isBA, comp classes against alt electives
-export const isCompElective = function (name) {
+//TODO handle invalid comp courses 
+export const isCompElective = function (name, isBa) {
     let dept = name.substring(0, 4);
     let num = parseInt(name.substring(4), 10);
-    return dept === "COMP" && num > 411;
+    if (isBa) {
+        let altElectives = ["BIOL525","INLS318","INLS609","INLS613","LING540","MATH566","MATH661","PHYS231","PHYS331"]
+        return altElectives.includes(dept+num) || (dept === "COMP" && num >= 426);
+    }
+
+    return dept === "COMP" && num >= 426;
 }
 
 // Gens html for rreqs consistent across majors/minors
@@ -499,7 +507,6 @@ export const handleCoreRequirements = function (userCourses, allCourses) {
     }
     if (userCourses.includes("MATH231")) {
         let course = getCourseObject("MATH231", allCourses);
-
         levelOne = levelOne + generateCompletedClass(course);
     } else {
         let course = getCourseObject("MATH231", allCourses);
@@ -542,18 +549,26 @@ export const handleCoreRequirements = function (userCourses, allCourses) {
     return html;
 };
 
-// TODO customize for BA
-export const handleElectives = function (numElectives, userCourses) {
+
+export const handleElectives = function (numElectives, userCourses, allCourses, isBa) {
     let electives = '<div class="container columns is-vcentered">';
     let currElectives = 0;
+    let numOutsideDept = 0;
     for (let i = 0; i < userCourses.length; i++) {
-        if (isCompElective(userCourses[i])) {
-            currElectives++;
-            if ((currElectives - 1) % 3 === 0) {
-                electives += '</div> <div class="container columns is-vcentered">'
+        if (isCompElective(userCourses[i], isBa)) {
+            let dept = name.substring(0, 4);
+            // BA only allows 2 outside-major courses
+            if (!isBa || dept === "COMP" || numOutsideDept < 2){
+                currElectives++;
+                if ((currElectives - 1) % 3 === 0) {
+                    electives += '</div> <div class="container columns is-vcentered">'
+                }
+                let course = getCourseObject(userCourses[i], allCourses);
+                electives += generateCompletedClass(course);
+                if (dept !== "COMP") {
+                    numOutsideDept++;
+                }
             }
-            let course = getCourseObject(userCourses[i], allCourses);
-            electives += generateCompletedClass(course);
 
         }
     }
@@ -580,7 +595,7 @@ export const handleElectives = function (numElectives, userCourses) {
 export const handleBA = function (userCourses, allCourses) {
     let html = handleCoreRequirements(userCourses, allCourses);
     // Fourth level: 6 total COMP electives
-    html += handleElectives(6, userCourses);
+    html += handleElectives(6, userCourses, allCourses, true);
     // 5th level: stor 155/psyc210/stor435
     html += '</div>';
     $root.append(html);
@@ -597,7 +612,7 @@ export const handleBS = function (userCourses) {
 export const handleMinor = function (userCourses) {
     let html = handleCoreRequirements(userCourses, allCourses);
 
-    html += handleElectives(2, userCourses);
+    html += handleElectives(2, userCourses,allCourses, false);
 
     html += '</div>';
     $root.append(html);
