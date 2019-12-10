@@ -15,15 +15,21 @@ let localStorage = window.localStorage;
  * @param {number} gradyear 
  */
 export async function create(username, password) {
-    const result = await axios({
-        method: 'post',
-        url: server + "account/create",
-        data: {
-            name: username,
-            pass: password
-        }
-    })
-    return result.status;
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "account/create",
+            data: {
+                name: username,
+                pass: password
+            }
+        })
+        return result.status;
+    } catch (error) {
+        console.log("in create error")
+        console.log(error.response)
+        return error.response;
+    }
 }
 
 /**
@@ -33,15 +39,19 @@ export async function create(username, password) {
  * @returns response object that should contain the JWT token and the name of the user
  */
 export async function login(username, password) {
-    const result = await axios({
-        method: 'post',
-        url: server + "account/login",
-        data: {
-            name: username,
-            pass: password
-        }
-    })
-    return result;
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "account/login",
+            data: {
+                name: username,
+                pass: password
+            }
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 
 /**
@@ -50,15 +60,18 @@ export async function login(username, password) {
  * @returns name and other user related information 
  */
 export async function status(bearer) {
-    const result = await axios({
-        method: 'get',
-        url: server + "account/status",
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
-    })
-
-    return result;
+    try {
+        const result = await axios({
+            method: 'get',
+            url: server + "account/status",
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 
 }
 // END INTERNAL METHODS. USE STUFF BELOW THIS ========================================================
@@ -82,7 +95,13 @@ export async function loginAndGetStatus(username, password) {
 };
 
 export async function createUser(username, password, firstname, lastname, cstrack, gradyear) {
-    await create(username, password)
+    try {
+        await create(username, password)
+    } catch (error) {
+        console.log("in createUser error")
+        return error.response
+    }
+
     let res = await login(username, password)
     localStorage.setItem("jwt", res.data.jwt)
     // let resp = await createUserObject(localStorage.getItem("jwt"))
@@ -111,23 +130,31 @@ export async function verifyEmail(email) {
 }
 
 export async function addUsernameToPublicRoute(username) {
-    const result = await axios({
-        method: 'post',
-        url: server + "public/users",
-        data: {
-            "data": username,
-            "type": "merge"
-        },
-    })
-    return
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "public/users",
+            data: {
+                "data": username,
+                "type": "merge"
+            },
+        })
+        return result
+    } catch (error) {
+        return error.response
+    }
 }
 
 export async function getUsersFromPublic() {
-    const result = await axios({
-        method: 'get',
-        url: server + "public/users"
-    })
-    return result;
+    try {
+        const result = await axios({
+            method: 'get',
+            url: server + "public/users"
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 /**
  * 
@@ -135,18 +162,22 @@ export async function getUsersFromPublic() {
  * @param {string} classname the name of the class you are adding
  */
 export async function addClass(bearer, classname) {
-    const result = await axios({
-        method: 'post',
-        url: server + "user/classes",
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        },
-        data: {
-            "data": classname,
-            "type": "merge"
-        },
-    })
-    return result
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "user/classes",
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            },
+            data: {
+                "data": classname,
+                "type": "merge"
+            },
+        })
+        return result
+    } catch (error) {
+        return error.response
+    }
 };
 
 /**
@@ -155,131 +186,167 @@ export async function addClass(bearer, classname) {
  * @returns Classes for the user associated with the jwt token. 
  */
 export async function getUserClasses(bearer) {
-    const result = await axios({
-        method: 'get',
-        url: server + "user/classes",
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
-    })
-    return result;
+    try {
+        const result = await axios({
+            method: 'get',
+            url: server + "user/classes",
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 
 // This is where we will use the private store. I will put all of the classes in the private store under the classes label and we can query it only if we are logged in. 
 export async function getClasses(bearer) {
-    const result = await axios({
-        method: 'get',
-        url: server + "private/classes",
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
-    })
-    return result;
+    try {
+        const result = await axios({
+            method: 'get',
+            url: server + "private/classes",
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 
 export async function createUserObject(bearer) {
-    const result = await axios({
-        method: 'post',
-        url: server + "user/classes",
-        data: {
-            "data": []
-        },
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
-    })
-    return result;
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "user/classes",
+            data: {
+                "data": []
+            },
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 
 // Populates the user route with the users personal information
 export async function populateUserFields(bearer, firstname, lastname, cstrack, gradyear) {
-    const result = await axios({
-        method: 'post',
-        url: server + "user/userData",
-        data: {
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "user/userData",
             data: {
-                firstname: firstname,
-                lastname: lastname,
-                cstrack: cstrack,
-                gradyear: gradyear
+                data: {
+                    firstname: firstname,
+                    lastname: lastname,
+                    cstrack: cstrack,
+                    gradyear: gradyear
+                }
+            },
+            headers: {
+                Authorization: `Bearer ${bearer}`
             }
-        },
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
-    })
-    return result
+        })
+        return result
+    } catch (error) {
+        return error.response
+    }
 }
 
 // Get the specific user fields. Should return firstname, lastname, gradyear, cstrack
 export async function getUserFields(bearer) {
-    const result = await axios({
-        method: 'get',
-        url: server + "user/userData",
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
-    })
-    return result
+    try {
+        const result = await axios({
+            method: 'get',
+            url: server + "user/userData",
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
+        })
+        return result
+    } catch (error) {
+        return error.response
+    }
 }
 export async function editFirstname(bearer, firstname) {
-    const result = await axios({
-        method: 'post',
-        url: server + "user/userData/firstname",
-        data: {
-            data: firstname
-        },
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "user/userData/firstname",
+            data: {
+                data: firstname
+            },
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
 
-    })
-    return result;
+        })
+        return result;
+    } catch (error) {
+        return error
+    }
 }
 
 export async function editLastname(bearer, lastname) {
-    const result = await axios({
-        method: 'post',
-        url: server + "user/userData/lastname",
-        data: {
-            data: lastname
-        },
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "user/userData/lastname",
+            data: {
+                data: lastname
+            },
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
 
-    })
-    return result;
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 
 export async function editCSTrack(bearer, cstrack) {
-    const result = await axios({
-        method: 'post',
-        url: server + "user/userData/cstrack",
-        data: {
-            data: cstrack
-        },
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "user/userData/cstrack",
+            data: {
+                data: cstrack
+            },
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
 
-    })
-    return result;
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 
 export async function editGradYear(bearer, gradyear) {
-    const result = await axios({
-        method: 'post',
-        url: server + "user/userData/gradyear",
-        data: {
-            data: gradyear
-        },
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
+    try {
+        const result = await axios({
+            method: 'post',
+            url: server + "user/userData/gradyear",
+            data: {
+                data: gradyear
+            },
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
 
-    })
-    return result;
+        })
+        return result;
+    } catch (error) {
+        return error.response
+    }
 }
 
 // Brute force way of deleting a class from the user route
@@ -293,26 +360,30 @@ export async function deleteClass(bearer, classname) {
         }
         remaining.push(classes[i])
     }
-    const res = await axios({
-        method: 'post',
-        url: server + "user/classes",
-        data: {
-            "data": remaining
-        },
-        headers: {
-            Authorization: `Bearer ${bearer}`
-        }
-    })
-    return res;
+    try {
+        const res = await axios({
+            method: 'post',
+            url: server + "user/classes",
+            data: {
+                "data": remaining
+            },
+            headers: {
+                Authorization: `Bearer ${bearer}`
+            }
+        })
+        return res;
+    } catch (error) {
+        return error.response
+    }
 }
 // ================= PLAYGROUND ==========================
 
 (async () => {
-    let v = await getUsersFromPublic()
-    console.log("users ", v)
-    await addUsernameToPublicRoute("testuser123")
-    v = await getUsersFromPublic()
-    console.log("users", v)
+    // let v = await getUsersFromPublic()
+    // console.log("users ", v)
+    // await addUsernameToPublicRoute("testuser123")
+    // v = await getUsersFromPublic()
+    // console.log("users", v)
 
     // let v = await createUser("testDelete", "pass", "testUpdate", "oldLastname", "BS", 2019)
     // await addClass(localStorage.getItem("jwt"), "COMP110")
