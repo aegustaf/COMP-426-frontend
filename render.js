@@ -11,7 +11,9 @@ import {
     editFirstname,
     editLastname,
     editCSTrack,
-    editGradYear
+    editGradYear,
+    addUsernameToPublicRoute,
+    getUsersFromPublic
 } from "./backend.js";
 
 export const $root = $('#root');
@@ -26,7 +28,7 @@ export const setUp = async function () {
     }
     /* hamburger nav menu functionality */
     // Check for click events on the navbar burger icon
-    $(".navbar-burger").click(function() {
+    $(".navbar-burger").click(function () {
         // Toggle the "is-active" class on both the "navbar-burger" and the "navbar-menu"
         $(".navbar-burger").toggleClass("is-active");
         $(".navbar-menu").toggleClass("is-active");
@@ -63,7 +65,7 @@ export const renderLoggedInContent = async function () {
     renderHomePage();
     // $(".tab").css("visibility", "visible");
     $(".navbar-start").empty();
-    let html = 
+    let html =
         `<a class="navbar-item tab" id="homeNav">
             Home
         </a>
@@ -89,6 +91,9 @@ export const renderLoggedInContent = async function () {
     $("#buttons").empty();
     let result = await getUserFields(localStorage.getItem("jwt"))
     let user = result.data.result
+    let output = await getUsersFromPublic()
+    $("#userCount").empty()
+    $("#userCount").append(`Registered users: ${output.data.result.length}`)
     html =
         `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.firstname}!</h5></div>
         <a class="button is-primary" id ="logoutButton">
@@ -97,8 +102,11 @@ export const renderLoggedInContent = async function () {
     $("#buttons").append(html);
 }
 
-export const renderNonLoggedInContent = function () {
+export const renderNonLoggedInContent = async function () {
     renderHomePage();
+    let output = await getUsersFromPublic()
+    $("#userCount").empty()
+    $("#userCount").append(`Registered users: ${output.data.result.length}`)
     // $(".tab").css("visibility", "hidden");
     $(".navbar-start").empty();
     $("#buttons").empty();
@@ -123,7 +131,12 @@ export const handleLoginButtonClick = function () {
 export const handleLoginSubmit = async function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
-    await loginAndGetStatus(username, password)
+    try {
+        await loginAndGetStatus(username, password)
+    } catch(error) {
+        console.log(error)
+        return
+    }
     await renderLoggedInContent()
 }
 
@@ -188,6 +201,7 @@ export const handleSignUpSubmit = async function () {
     } else {
         cstrack = "Minor"
     }
+
     let res = await verifyEmail(email);
     
     if(!res.success){
@@ -196,6 +210,8 @@ export const handleSignUpSubmit = async function () {
     }else{
         // Create user 
         await createUser(username, password, firstname, lastname, cstrack, year, email)
+        // Add username to public route
+        await addUsernameToPublicRoute(username)
         // Customize site to user
         await renderLoggedInContent()
     }
@@ -285,13 +301,13 @@ export const renderSignUpForm = function () {
 export const handleFindNavClick = async function () {
     $root.empty();
     let token = localStorage.getItem("jwt");
-    let classes;    //list of classes
-    let userClasses;    //list of classes user has added to their profile
-    await getClasses(token).then(res=>{
-        classes = new Map(Object.entries(res.data.result))          
+    let classes; //list of classes
+    let userClasses; //list of classes user has added to their profile
+    await getClasses(token).then(res => {
+        classes = new Map(Object.entries(res.data.result))
     })
     let classNames = Array.from(classes.keys()) //array of class names
-    await getUserClasses(token).then(elem=>{
+    await getUserClasses(token).then(elem => {
         userClasses = (elem.data.result)
     })
 
@@ -305,21 +321,25 @@ export const handleFindNavClick = async function () {
         Search
       </a>
     </div>
-  </div><div class ="columns is-mobile is-multiline"></div>`           
-    $root.append(html)  
+  </div><div class ="columns is-mobile is-multiline"></div>`
+    $root.append(html)
 
     //adds each course 
-    classes.forEach(elem=>{
-        if(userClasses.includes(elem.name)){
+    classes.forEach(elem => {
+        if (userClasses.includes(elem.name)) {
             renderAddedClass(elem)
-        }else{
+        } else {
             renderNewClass(elem);
-            $(`#classAdd${elem.number}`).on("click", {param1: `${token}`, param2: `${elem.name}`}, classAddition)  
+            console.log(elem);
+            $(`#classAdd${elem.number}`).on("click", {
+                param1: `${token}`,
+                param2: `${elem.department}` +`${elem.number}`
+            }, classAddition)
         }
     })
 };
 
-export const renderAddedClass = function(elem){
+export const renderAddedClass = function (elem) {
     let classCard = `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
         <header class="card-header">
         <p class="card-header-title" style="justify-content: center">
@@ -338,8 +358,8 @@ export const renderAddedClass = function(elem){
 
 }
 
-export const renderNewClass = function(elem){
-    let classCard= `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
+export const renderNewClass = function (elem) {
+    let classCard = `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
     <header class="card-header">
     <p class="card-header-title" style="justify-content: center">
         ${elem.department} ${elem.number}
@@ -358,37 +378,39 @@ export const renderNewClass = function(elem){
     $(".columns").append(classCard);
 }
 
-export const classAddition = async function(event){
+export const classAddition = async function (event) {
     let token = event.data.param1;
+    console.log(event.data);
     let name = event.data.param2;
+    console.log(name)
     let classObj;
     await addClass(token, name)
-    await getClassObj(token, name).then(elem=>{
-        classObj = elem;
-    });
+    let courses = await getClasses(token)
+    courses = courses.data.result;
+    classObj = await getCourseObject(name, courses);
     $(`a.${classObj.number}`).replaceWith(`<button class="delete" id= "delete${classObj.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
 }
 
-export const getClassObj = async function(token, name){
+export const getClassObj = async function (token, name) {
     let classes;
     let course;
-    await getClasses(token).then(res=>{
-        classes = new Map(Object.entries(res.data.result))          
+    await getClasses(token).then(res => {
+        classes = new Map(Object.entries(res.data.result))
     })
-    classes.forEach(elem=>{
-        if(elem.name === name){
+    classes.forEach(elem => {
+        if (elem.name === name) {
             course = elem;
         }
     })
     return course;
-} 
+}
 
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 
 /* Handles when user clicks on Progress tab in nav bar */
 export const handleProgressNavClick = async function () {
     console.log("handle progress nav click")
-    $root.empty(); 
+    $root.empty();
     $root.append(`<div class="container has-text-centered"> 
         <h1 class="title is-1 is-marginless"> Your Progress</h1>
         <br/ >
@@ -405,7 +427,7 @@ export const handleProgressNavClick = async function () {
         handleBA(userCourses, allCourses);
     } else if (userTrack === "BS") {
         handleBS(userCourses, allCourses);
-    } else { 
+    } else {
         handleMinor(userCourses, allCourses);
     }
 
@@ -438,12 +460,12 @@ export const canTakeClass = function (course, userCourses) {
             if (reqs.length === 1) {
                 response += course.prerequisites[i];
             } else {
-                response += "one of " + course.prerequisites[i]; 
+                response += "one of " + course.prerequisites[i];
             }
         }
     }
     return response;
-    
+
 }
 
 
@@ -451,9 +473,9 @@ export const canTakeClass = function (course, userCourses) {
 // Finds course in private store based on dept and num
 export const getCourseObject = function (name, courses) {
     let rightCourse;
-    Object.keys(courses).forEach(function(key) {
+    Object.keys(courses).forEach(function (key) {
         let course = courses[key];
-        let dept = name.substring(0,4);
+        let dept = name.substring(0, 4);
         let num = parseInt(name.substring(4), 10);
         if (course.department === dept && course.number === num) {
             rightCourse = course;
@@ -462,11 +484,16 @@ export const getCourseObject = function (name, courses) {
     return rightCourse;
 }
 
-//TODO add param for isBA, comp classes against alt electives
-export const isCompElective = function (name) {
-    let dept = name.substring(0,4);
+//TODO handle invalid comp courses 
+export const isCompElective = function (name, isBa) {
+    let dept = name.substring(0, 4);
     let num = parseInt(name.substring(4), 10);
-    return dept === "COMP" && num > 411;
+    if (isBa) {
+        let altElectives = ["BIOL525","INLS318","INLS609","INLS613","LING540","MATH566","MATH661","PHYS231","PHYS331"]
+        return altElectives.includes(dept+num) || (dept === "COMP" && num >= 426);
+    }
+
+    return dept === "COMP" && num >= 426;
 }
 
 // Gens html for rreqs consistent across majors/minors
@@ -485,10 +512,9 @@ export const handleCoreRequirements = function (userCourses, allCourses) {
         levelOne = levelOne + `OR`
         course = getCourseObject("COMP116", allCourses);
         levelOne = levelOne + generateUncompletedClass(course, userCourses);
-    } 
+    }
     if (userCourses.includes("MATH231")) {
         let course = getCourseObject("MATH231", allCourses);
-        
         levelOne = levelOne + generateCompletedClass(course);
     } else {
         let course = getCourseObject("MATH231", allCourses);
@@ -531,18 +557,26 @@ export const handleCoreRequirements = function (userCourses, allCourses) {
     return html;
 };
 
-// TODO customize for BA
-export const handleElectives = function (numElectives, userCourses) {
+
+export const handleElectives = function (numElectives, userCourses, allCourses, isBa) {
     let electives = '<div class="container columns is-vcentered">';
     let currElectives = 0;
-    for(let i = 0; i < userCourses.length; i++) {
-        if (isCompElective(userCourses[i])) {
-            currElectives++;
-            if ((currElectives - 1) % 3 === 0) {
-                electives += '</div> <div class="container columns is-vcentered">'
+    let numOutsideDept = 0;
+    for (let i = 0; i < userCourses.length; i++) {
+        if (isCompElective(userCourses[i], isBa)) {
+            let dept = name.substring(0, 4);
+            // BA only allows 2 outside-major courses
+            if (!isBa || dept === "COMP" || numOutsideDept < 2){
+                currElectives++;
+                if ((currElectives - 1) % 3 === 0) {
+                    electives += '</div> <div class="container columns is-vcentered">'
+                }
+                let course = getCourseObject(userCourses[i], allCourses);
+                electives += generateCompletedClass(course);
+                if (dept !== "COMP") {
+                    numOutsideDept++;
+                }
             }
-            let course = getCourseObject(userCourses[i], allCourses);
-            electives += generateCompletedClass(course);
 
         }
     }
@@ -569,7 +603,7 @@ export const handleElectives = function (numElectives, userCourses) {
 export const handleBA = function (userCourses, allCourses) {
     let html = handleCoreRequirements(userCourses, allCourses);
     // Fourth level: 6 total COMP electives
-    html += handleElectives(6, userCourses);
+    html += handleElectives(6, userCourses, allCourses, true);
     // 5th level: stor 155/psyc210/stor435
     html += '</div>';
     $root.append(html);
@@ -577,7 +611,7 @@ export const handleBA = function (userCourses, allCourses) {
 
 export const handleBS = function (userCourses) {
     let html = handleCoreRequirements(userCourses, allCourses);
-    
+
     // TODO: finish
     html += '</div>';
     $root.append(html);
@@ -585,12 +619,12 @@ export const handleBS = function (userCourses) {
 
 export const handleMinor = function (userCourses) {
     let html = handleCoreRequirements(userCourses, allCourses);
-    
-    html += handleElectives(2, userCourses);
+
+    html += handleElectives(2, userCourses,allCourses, false);
 
     html += '</div>';
     $root.append(html);
-    
+
 };
 
 
@@ -600,10 +634,10 @@ export const generateCompletedClass = function (course) {
     let card = `<div class="card complete-course column">
         <div class="card-content">
             <div class="title is-4 courseTitle is-marginless">
-                `+course.department + course.number + ": " + course.name  +`
+                ` + course.department + course.number + ": " + course.name + `
             </div>
             <p>
-                `+ course.description+`
+                ` + course.description + `
             </p>
         </div>
     </div>
@@ -612,7 +646,7 @@ export const generateCompletedClass = function (course) {
     return card;
 };
 
-export const generateUncompletedClass= function (course, userCourses) {
+export const generateUncompletedClass = function (course, userCourses) {
     // Include: class name, prereqs (if they can take it or not), desc
     let prereqs = canTakeClass(course, userCourses);
     //All prereqs complete
@@ -620,10 +654,10 @@ export const generateUncompletedClass= function (course, userCourses) {
         return `<div class="card have-reqs-course column">
         <div class="card-content">
             <div class="title is-4 courseTitle is-marginless">
-                `+course.department + course.number + ": " + course.name  +`
+                ` + course.department + course.number + ": " + course.name + `
             </div>
             <p>
-                `+ course.description+`
+                ` + course.description + `
             </p>
         </div>
     </div>
@@ -632,11 +666,11 @@ export const generateUncompletedClass= function (course, userCourses) {
         return `<div class="card need-reqs-course column">
         <div class="card-content">
             <div class="title is-4 courseTitle is-marginless">
-                `+course.department + course.number + ": " + course.name  +`
+                ` + course.department + course.number + ": " + course.name + `
             </div>
 
             <p>
-                `+ course.description+`
+                ` + course.description + `
             </p>
             <p class="is-italic">
             ` + prereqs + `.
@@ -705,7 +739,7 @@ export const renderProfile = async function () {
 export const handleSubmitEditProfileClick = async function () {
     let firstName = document.getElementById("userFirstName").value;
     let lastName = document.getElementById("userLastName").value;
-    
+
     let ba = $("#BA:checked").val()
     let bs = $("#BS:checked").val()
     let minor = $("#Minor:checked").val()
@@ -718,13 +752,13 @@ export const handleSubmitEditProfileClick = async function () {
         cstrack = "Minor"
     }
     let gradyear = document.getElementById("userGradYear").value;
-    
+
     let jwt = localStorage.getItem("jwt")
     await editFirstname(jwt, firstName)
     await editLastname(jwt, lastName)
     await editCSTrack(jwt, cstrack)
     await editGradYear(jwt, gradyear)
-    
+
     renderProfile()
 };
 

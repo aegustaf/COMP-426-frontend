@@ -1,56 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        <title>Progress in CS</title>
-        
-        <link rel="stylesheet" href="node_modules/bulma/css/bulma.css" />    
-        <link rel="stylesheet" href="styles.css" />
-        <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
-        <!-- <link rel="stylesheet" href="styles.css" />  -->
-    </head>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <body>
-      <nav class="navbar" role="navigation" aria-label="main navigation">
-        <div class="navbar-brand">
-          <a class="navbar-item" href="#" id="logo">
-            <img src="logo.png" width="152" height="38">
-          </a>
+  <title>Progress in CS</title>
 
-          <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false" data-target="navbarBasicExample">
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
+  <link rel="stylesheet" href="node_modules/bulma/css/bulma.css" />
+  <link rel="stylesheet" href="styles.css" />
+  <script defer src="https://use.fontawesome.com/releases/v5.3.1/js/all.js"></script>
+  <!-- <link rel="stylesheet" href="styles.css" />  -->
+</head>
+
+<body>
+  <nav class="navbar" role="navigation" aria-label="main navigation">
+    <div class="navbar-brand">
+      <a class="navbar-item" href="#" id="logo">
+        <img src="logo.png" width="152" height="38">
+      </a>
+
+      <a role="button" class="navbar-burger burger" aria-label="menu" aria-expanded="false"
+        data-target="navbarBasicExample">
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+        <span aria-hidden="true"></span>
+      </a>
+    </div>
+
+    <div id="navbarBasicExample" class="navbar-menu">
+
+      <div class="navbar-start"></div>
+
+      <div class="navbar-end">
+        <div class="navbar-item">
+          <div class="buttons" id="buttons"></div>
         </div>
-
-        <div id="navbarBasicExample" class="navbar-menu">
-
-          <div class="navbar-start"></div>
-
-          <div class="navbar-end">
-            <div class="navbar-item">
-              <div class="buttons" id="buttons">
-                <a class="button is-primary" id ="signupButton">
-                  <strong>Sign up</strong>
-                </a>
-                <a class="button is-light" id ="loginButton">
-                  Log in
-                </a>
-                <div id="greeting"></div>
-                <a class="button is-primary" id ="logoutButton">
-                  <strong>Log out</strong>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </nav>
+      </div>
+    </div>
+  </nav>
 
   <section class="hero is-primary">
-    <div class="hero-body"></div>
+    <div class="hero-body">
+      <div>
+        <p class="has-text-centered" id="userCount">Loading Users</p>
+      </div>
+    </div>
   </section>
 
   <div id="root"></div>
