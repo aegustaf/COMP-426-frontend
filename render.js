@@ -78,10 +78,6 @@ export const renderLoggedInContent = async function () {
             Progress
         </a>
 
-        <a class="navbar-item tab" id="addNav">
-            Add Completed Courses
-        </a>
-
         <a class="navbar-item tab" id="findNav">
             Find Courses
         </a>`;
