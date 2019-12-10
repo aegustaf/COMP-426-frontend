@@ -781,13 +781,47 @@ export const handleBS = function (userCourses, allCourses) {
     html += levelNine + '</div>';
     
     //second science
-    
-
+    html += handleSecondScience(userCourses, allCourses);
 
 
     html += '</div>';
     $root.append(html);
 }
+
+export const handleSecondScience = function (userCourses, allCourses) {
+    let courseOptions = ["ASTR101", "BIOL101", "BIOL202", "BIOL205", "CHEM101", "CHEM102", "GEOL101", "PHYS115", "PHYS117", "PHYS119", "PHYS351", "PHYS352"];
+    let hasScience = false;
+    let scienceCourse = null;
+    for (let i = 0; i < courseOptions.length && !hasScience; i++) {
+        for (let j = 0; j < userCourses.length && !hasScience; j++) {
+            if (userCourses[j] === courseOptions[i]) {
+                hasScience = true;
+                scienceCourse = userCourses[i];
+            }
+        }
+    }
+
+    if (hasScience) {
+        let course = getCourseObject(scienceCourse, allCourses);
+        return '<div class="container columns is-vcentered">' + generateCompletedClass(course) + '</div>';
+    }
+
+    let html = '<div class="container columns is-vcentered">';
+    for (let i = 0; i < courseOptions.length; i++) {
+        if ((i) % 3 === 0 && i !== 0) {
+            html += '</div><div class="container columns is-vcentered">'
+        }
+        let course = getCourseObject(courseOptions[i], allCourses);
+        if (i !== 0) {
+            html += "OR"
+        }
+        html += generateUncompletedClass(course, userCourses);
+    }
+    html += "</div>";
+    return html;
+
+}
+
 
 export const handleMinor = function (userCourses, allCourses) {
     let html = handleCoreRequirements(userCourses, allCourses);
