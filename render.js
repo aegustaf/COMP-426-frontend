@@ -131,7 +131,12 @@ export const handleLoginButtonClick = function () {
 export const handleLoginSubmit = async function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
-    await loginAndGetStatus(username, password)
+    try {
+        await loginAndGetStatus(username, password)
+    } catch(error) {
+        console.log(error)
+        return
+    }
     await renderLoggedInContent()
 }
 
