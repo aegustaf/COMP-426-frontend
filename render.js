@@ -13,7 +13,8 @@ import {
     editCSTrack,
     editGradYear,
     addUsernameToPublicRoute,
-    getUsersFromPublic
+    getUsersFromPublic,
+    deleteClass
 } from "./backend.js";
 
 export const $root = $('#root');
@@ -50,7 +51,6 @@ export const setUp = async function () {
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
     $(document).on("click", "#progressNav", handleProgressNavClick);
-    $(document).on("click", "#addNav", handleAddNavClick);
     $(document).on("click", "#findNav", handleFindNavClick);
 
     /* Click handlers for profile tab (profile card and edit form) */
@@ -76,10 +76,6 @@ export const renderLoggedInContent = async function () {
 
         <a class="navbar-item tab" id="progressNav">
             Progress
-        </a>
-
-        <a class="navbar-item tab" id="addNav">
-            Add Completed Courses
         </a>
 
         <a class="navbar-item tab" id="findNav">
@@ -326,10 +322,11 @@ export const handleFindNavClick = async function () {
     await getClasses(token).then(res => {
         classes = new Map(Object.entries(res.data.result))
     })
-    let classNames = Array.from(classes.keys()) //array of class names
+    // let classNames = Array.from(classes.keys()) //array of class names
     await getUserClasses(token).then(elem => {
         userClasses = (elem.data.result)
     })
+    console.log(userClasses)
 
     //adds searchbar
     let html = `<div class="field has-addons" style="justify-content: center; margin-top: 2%">
@@ -346,26 +343,44 @@ export const handleFindNavClick = async function () {
 
     //adds each course 
     classes.forEach(elem => {
-        if (userClasses.includes(elem.name)) {
+        let className = elem.department + elem.number;
+        if (userClasses.includes(className)) {
             renderAddedClass(elem)
+            addDeleteListeners(elem)
+            // $(`#delete${className}`).on("click", {
+            //     param1: `${token}`,
+            //     param2: `${elem.department}` +`${elem.number}`
+            // }, classRemoval)    
         } else {
             renderNewClass(elem);
-            console.log(elem);
-            $(`#classAdd${elem.number}`).on("click", {
-                param1: `${token}`,
-                param2: `${elem.department}` +`${elem.number}`
-            }, classAddition)
+            // $(`#classAdd${className}`).on("click", {
+            //     param1: `${token}`,
+            //     param2: `${elem.department}` +`${elem.number}`
+            // }, classAddition)
+            addplusListeners(elem)
         }
     })
 };
 
+export const addDeleteListeners = function (obj) {
+        $("body").on("click", `#delete${obj.department+obj.number}`,{
+            param1: localStorage.getItem("jwt"), param2: obj.department+obj.number
+        }, classRemoval)
+}
+
+export const addplusListeners = function (obj) {
+    $("body").on("click", `#classAdd${obj.department+obj.number}`,{
+        param1: localStorage.getItem("jwt"), param2: obj.department+obj.number
+    }, classAddition)
+}
+
 export const renderAddedClass = function (elem) {
-    let classCard = `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%">
         <header class="card-header">
         <p class="card-header-title" style="justify-content: center">
     ${elem.department} ${elem.number}
     </p>
-    <button class="delete" id= "delete${elem.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>
+    <button class="delete" id= "delete${elem.department}${elem.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>
         </header>
         <div class="card-content">
     <div class="content">
@@ -379,19 +394,19 @@ export const renderAddedClass = function (elem) {
 }
 
 export const renderNewClass = function (elem) {
-    let classCard = `<div class="card ${elem.number}" style="width: 30%; margin: 1%">
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%">
     <header class="card-header">
     <p class="card-header-title" style="justify-content: center">
         ${elem.department} ${elem.number}
     </p>
-    <a id ="classAdd${elem.number}" style = "visibility: visible" class="add ${elem.number}"><span class="icon">
+    <a id ="classAdd${elem.department}${elem.number}" style = "visibility: visible" class="add ${elem.department}${elem.number}"><span class="icon">
     <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
     </span></a>
     </header>
     <div class="card-content">
     <div class="content">
     <p class="subtitle">${elem.name}</p>
-    Instructor: ${elem.instructor} 
+    ${elem.description} 
      </div>
     </div>
     </div>`
@@ -400,15 +415,29 @@ export const renderNewClass = function (elem) {
 
 export const classAddition = async function (event) {
     let token = event.data.param1;
-    console.log(event.data);
     let name = event.data.param2;
-    console.log(name)
     let classObj;
     await addClass(token, name)
     let courses = await getClasses(token)
     courses = courses.data.result;
-    classObj = await getCourseObject(name, courses);
-    $(`a.${classObj.number}`).replaceWith(`<button class="delete" id= "delete${classObj.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
+    classObj = getCourseObject(name, courses);
+    $(`a.${name}`).replaceWith(`<button class="delete" id= "delete${name}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
+    addDeleteListeners(classObj);
+}
+
+export const classRemoval = async function(event){
+    let token = event.data.param1;
+    let name = event.data.param2;
+    let classObj;
+    await deleteClass(token, name);
+    let courses = await getClasses(token)
+    courses = courses.data.result;
+    classObj = getCourseObject(name, courses);
+    $(`#delete${name}`).replaceWith(`
+    <a id ="classAdd${name}" style = "visibility: visible" class="add ${name}"><span class="icon">
+    <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
+    </span></a>`);
+    addplusListeners(classObj)
 }
 
 export const getClassObj = async function (token, name) {
@@ -1040,12 +1069,7 @@ export const generateUncompletedClass = function (course, userCourses) {
 
 
 };
-/*----------------------------------------- ADD COMPLETED COURSES TAB -------------------------------------------*/
 
-/* Handles when user clicks on Add CompetedCourses tab in nav bar */
-export const handleAddNavClick = function () {
-
-};
 
 /*----------------------------------------- PROFILE TAB -------------------------------------------*/
 
@@ -1073,6 +1097,8 @@ export const renderProfile = async function () {
                     <div class="card-content">
                     <div class="content">
                             <b>Username:  </b>   ${stat.data.user.name}
+                            <br><br>
+                            <b>Username:  </b>   ${user.email}
                             <br><br>
                             <b>Name:  </b>   ${user.firstname} ${user.lastname}
                             <br><br>
