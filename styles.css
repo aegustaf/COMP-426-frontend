@@ -59,7 +59,7 @@ div.courseTitle {
     
 }
 
-.card-footer {
+.card-footer-class {
     position: absolute;
     width: 100%; 
     bottom: 0px; 
@@ -72,7 +72,7 @@ div.courseTitle {
     color: black;
 }
 
-.card-content {
+.card-content-class {
     overflow: scroll;
     height: 125px;
 }
