@@ -188,10 +188,11 @@ export const handleSignUpSubmit = async function () {
     } else {
         cstrack = "Minor"
     }
-
+    let res = await verifyEmail(email);
     
-    if(!await verifyEmail(email)){
-        alert("You did not enter a valid email");
+    if(!res.success){
+        $("#emailerror").empty();
+        $("#emailerror").append(`<div style="color:red">${res.msg}</div>`);
     }else{
         // Create user 
         await createUser(username, password, firstname, lastname, cstrack, year, email)
@@ -238,9 +239,10 @@ export const renderSignUpForm = function () {
                         </div>
                     </div>
                     <div class="field">
-                        <label class="label">Email (optional):</label>
+                        <label class="label">Email:</label>
                         <div class="control">
                             <input class="input"  type="text" id="signupForm_email">
+                            <div id="emailerror"></div>
                         </div>
                     </div>
                     <div class="field">

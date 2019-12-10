@@ -101,12 +101,28 @@ export async function verifyEmail(email){
             method: 'post',
             url: "https://apilayer.net/api/check?access_key=818747c61f4898480de42012655d607e&email="+email,
         })
-        //console.log(result.data);
-        return (result.data.format_valid&&result.data.smtp_check);
+        console.log(result.data);
+        
+        if(result.data.hasOwnProperty('error')){
+            return {success: false, msg: result.data.error.info};
+        }else{
+            if(result.data.did_you_mean!=""){
+                let str = "Did you mean: "+result.data.did_you_mean;
+                return {success: false, msg: str};
+            }else if(!result.data.format_valid){
+                return {success: false, msg: "Invalid email."};
+            }else if(!result.data.smtp_check){
+                return {success: false, msg: "Nonexistent email."};
+            }else{
+                return {success: true, msg: "Email verified."};
+            }
+        }
+
     } catch (error) {
         console.log(error);
+        
     }
-    return false;
+    return {success:false, msg:"Something went wrong."};
     
 }
 
