@@ -51,7 +51,6 @@ export const setUp = async function () {
     $(document).on("click", "#homeNav", handleHomeNavClick);
     $(document).on("click", "#profileNav", handleProfileNavClick);
     $(document).on("click", "#progressNav", handleProgressNavClick);
-    $(document).on("click", "#addNav", handleAddNavClick);
     $(document).on("click", "#findNav", handleFindNavClick);
 
     /* Click handlers for profile tab (profile card and edit form) */
@@ -1158,12 +1157,7 @@ export const generateUncompletedClass = function (course, userCourses) {
 
 
 };
-/*----------------------------------------- ADD COMPLETED COURSES TAB -------------------------------------------*/
 
-/* Handles when user clicks on Add CompetedCourses tab in nav bar */
-export const handleAddNavClick = function () {
-
-};
 
 /*----------------------------------------- PROFILE TAB -------------------------------------------*/
 
@@ -1191,6 +1185,8 @@ export const renderProfile = async function () {
                     <div class="card-content">
                     <div class="content">
                             <b>Username:  </b>   ${stat.data.user.name}
+                            <br><br>
+                            <b>Username:  </b>   ${user.email}
                             <br><br>
                             <b>Name:  </b>   ${user.firstname} ${user.lastname}
                             <br><br>
