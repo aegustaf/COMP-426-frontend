@@ -821,8 +821,8 @@ export const addProgressListeners = function (obj) {
 
 export const addClassFromProg = async function (event) {
     let jwt = localStorage.getItem("jwt");
-    await addClass(jwt, name);
     let course = event.data.course;
+    await addClass(jwt, course.department+course.number);
     let id = "#prog"+course.department+course.number;
     $(id).replaceWith(generateCompletedClass(course));
     
