@@ -37,7 +37,7 @@ export const setUp = async function () {
     /* clicking on logo takes you to homepage */
     $(document).on("click", "#logo", handleHomeNavClick);
 
-    /* Click handlers for Login, Sign Up, amnd Log Out buttons */
+    /* Click handlers for Login, Sign Up, and Log Out buttons */
     $(document).on("click", "#loginButton", handleLoginButtonClick);
     $(document).on("click", "#signupButton", handleSignUpButtonClick);
     $(document).on("click", "#logoutButton", logout);
@@ -131,14 +131,26 @@ export const handleLoginButtonClick = function () {
 export const handleLoginSubmit = async function () {
     let username = $("#loginForm_username").val()
     let password = $("#loginForm_password").val()
-    await loginAndGetStatus(username, password)
+    try {
+        await loginAndGetStatus(username, password)
+    } catch(error) {
+        $('#warning').remove()
+        let html = 
+            `<section class="section profile" id="warning">
+                <div class="notification is-danger profile">
+                    <p><span class="has-text-weight-bold">Woah there!  </span>Wrong username or password.</p>
+                </div>
+            </section>`;
+        $root.prepend(html);
+        return
+    }
     await renderLoggedInContent()
 }
 
 export const renderLoginForm = function () {
     $root.empty();
     let html =
-        `<section class="section profile">
+        `<section class="section profile" id="content">
             <div class="card">
                 <header class="card-header">
                 <p class="card-header-title">
@@ -197,12 +209,27 @@ export const handleSignUpSubmit = async function () {
         cstrack = "Minor"
     }
 
-
-    if (!await verifyEmail(email)) {
-        alert("You did not enter a valid email");
-    } else {
-        // Create user 
-        await createUser(username, password, firstname, lastname, cstrack, year)
+    let res = await verifyEmail(email);
+    
+    if(!res.success){
+        $("#emailerror").empty();
+        $("#emailerror").append(`<div style="color:red">${res.msg}</div>`);
+    }else{
+        $("#emailerror").empty();
+        try {
+            // Create user 
+            await createUser(username, password, firstname, lastname, cstrack, year, email)
+        } catch(error) {
+            $('#warning').remove()
+            let html = 
+                `<section class="section profile" id="warning">
+                    <div class="notification is-danger profile">
+                        <p><span class="has-text-weight-bold">Woah there!  </span>Fields missing or username already taken.</p>
+                    </div>
+                </section>`;
+            $root.prepend(html);
+            return
+        }
         // Add username to public route
         await addUsernameToPublicRoute(username)
         // Customize site to user
@@ -214,7 +241,7 @@ export const handleSignUpSubmit = async function () {
 export const renderSignUpForm = function () {
     $root.empty();
     let html =
-        `<section class="section profile">
+        `<section class="section profile" id="content">
             <div class="card">
                 <header class="card-header">
                 <p class="card-header-title">
@@ -248,9 +275,10 @@ export const renderSignUpForm = function () {
                         </div>
                     </div>
                     <div class="field">
-                        <label class="label">Email (optional):</label>
+                        <label class="label">Email:</label>
                         <div class="control">
                             <input class="input"  type="text" id="signupForm_email">
+                            <div id="emailerror"></div>
                         </div>
                     </div>
                     <div class="field">
@@ -398,7 +426,6 @@ export const getClassObj = async function (token, name) {
 }
 
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
-
 /* Handles when user clicks on Progress tab in nav bar */
 export const handleProgressNavClick = async function () {
     console.log("handle progress nav click")
@@ -927,7 +954,6 @@ export const generateUncompletedClass = function (course, userCourses) {
 
 
 };
-
 /*----------------------------------------- ADD COMPLETED COURSES TAB -------------------------------------------*/
 
 /* Handles when user clicks on Add CompetedCourses tab in nav bar */
@@ -1094,12 +1120,7 @@ export const renderHomePage = function () {
                 <div class="content">
                     <h1 class="title">Use Progress in CS</h1>
                     <h5 class="subtitle has-text-grey">Map out your 4-year CS plan</h5>
-                    <p>When it comes to developing websites, design can be a very fun aspect. But in reality we often don't want
-                        to spend hours writing CSS.
-                        Aspects of good design (consistent theming, mobile friendly, and good typography) are tedious to manage
-                        for every site. Not to mention
-                        that most people don't get them right in the first place. So we use these frameworks to do a lot of the
-                        leg work for us.
+                    <p>Our site can help you plan out your Computer Science degree, whether it's a minor, B.A., or B.S. Use our tool to build your custom route through CS Classes at UNC, and make sure you're fulfilling all your requirements. Our site makes tracking your path easy so you can be successful in your college career.
                     </p>
                 </div>
             </div>
@@ -1111,31 +1132,15 @@ export const renderHomePage = function () {
                     <div class="columns">
                         <div class="column">
                             <h1 class="title">Why CS</h1>
-                            <h5 class="subtitle has-text-grey">Words words words are important</h5>
-                            <p>When it comes to design and specifically typography (which is a massive part of web design), you
-                                want
-                                your content to be readable. This means that when someone looks at it, they intuitively know
-                                which text to read first, second, and third.
-                                If all of the text on the page was the same size, it would be difficult to know which
-                                information is the most important.</p>
-                            <p>Size is one key way in which typographers create hierarchy and guide their readers.
-                                Headings are usually large, sub-headings are smaller, and body type is smaller still.
-                                Size is not the only way to define hierarchy – it can also be achieved with colour, spacing and
-                                weight.</p>
+                            <h5 class="subtitle has-text-grey">A Degree for a Bright Future</h5>
+                            <p>Computer Science is one of the fastest growing majors here at UNC. A wide variety of courses taught by world class faculty will give you the knowledge you need for a prosperous career in compsci.</p>
+                            <p>Still not sure if CS is right for you? Make an account and check out the requirements and offered classes. You may find that a minor in computer science is worth your time.</p>
                         </div>
                         <div class="column">
                             <h1 class="title">Plan Early</h1>
-                            <h5 class="subtitle has-text-grey">Words words words are important</h5>
-                            <p>The term 'measure' describes the width of a text block. If you're seeking to achieve the optimum
-                                reading experience,
-                                it's clearly an important consideration. If your lines are too long, your reader can easily get
-                                lost,
-                                while a too-short measure breaks up the reading experience unnecessarily.</p>
-                            <p>
-                                There are a number of theories to help you define the ideal measure for your typography.
-                                One rule of thumb is that your lines should be 2-3 alphabets in length (so 52-78 characters,
-                                including spaces). Bulma's container class
-                                does this for us.</p>
+                            <h5 class="subtitle has-text-grey">Early planning will lead to success</h5>
+                            <p>Make sure to start planning early, as CS has a strong progression to its classes. By covering the basic requirements sooner, there will be more opportunity to take electives that are relevant and interesting to you personally.</p>
+                            <p>Still not sure if CS is right for you? Building out a plan through our fre site will show you what you need, and you may find more overlap with your own major than you expect. Try it now! </p>
 
                         </div>
                     </div>
