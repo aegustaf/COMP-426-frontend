@@ -7,7 +7,6 @@
     width: 500px;
 }
 div.complete-course {
-    overflow: scroll;
     margin-right: 20px;  
     margin-left: 20px;  
     margin-top: 0px;
@@ -19,7 +18,7 @@ div.complete-course {
 }
 div.have-reqs-course {
     margin-right: 20px;
-    overflow: scroll;  
+     
     margin-left: 20px;  
     margin-top: 0px;
     margin-bottom: 0px;
@@ -30,7 +29,6 @@ div.have-reqs-course {
     box-shadow: 5px 10px hsl(48, 100%, 67%);
 }
 div.need-reqs-course {
-    overflow: scroll;
     height: 175px;
     width: inherit;
     margin-right: 20px;  
@@ -60,6 +58,26 @@ div.courseTitle {
     margin-bottom: 40px;
     
 }
+
+.card-footer {
+    position: absolute;
+    width: 100%; 
+    bottom: 0px; 
+    height: 50px;
+    margin-bottom: 0px;
+    padding-bottom: 0px;
+}
+
+.card-footer-item {
+    color: black;
+}
+
+.card-content {
+    overflow: scroll;
+    height: 125px;
+}
+
+
 
 /* .tab {
     visibility: hidden;
