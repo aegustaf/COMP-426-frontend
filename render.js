@@ -428,12 +428,8 @@ export const getClassObj = async function (token, name) {
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 /* Handles when user clicks on Progress tab in nav bar */
 export const handleProgressNavClick = async function () {
-    console.log("handle progress nav click")
     $root.empty();
-    $root.append(`<div class="container has-text-centered"> 
-        <h1 class="title is-1 is-marginless"> Your Progress</h1>
-        <br/ >
-    </div>`)
+    
     let jwt = localStorage.getItem("jwt");
     let resp = await getClasses(jwt);
     let allCourses = resp.data.result;
@@ -442,6 +438,11 @@ export const handleProgressNavClick = async function () {
     let response = await getUserFields(jwt);
     let userData = response.data;
     let userTrack = userData.result.cstrack;
+    $root.append(`<div class="container has-text-centered progress-header"> 
+        <h1 class="title is-1"> Your Progress: `+userTrack+` </h1>
+        <p class="is-italic"> Green courses have been taken, yellow courses can be taken, and red courses have prereqs remaining. </p>
+    </div>`)
+
     if (userTrack === "BA") {
         handleBA(userCourses, allCourses);
     } else if (userTrack === "BS") {
@@ -592,7 +593,7 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
             // BA only allows 2 outside-major courses
             if (!isBa || dept === "COMP" || numOutsideDept < 2){
                 currElectives++;
-                if ((currElectives - 1) % 3 === 0) {
+                if ((currElectives - 1) % 3 === 0 && currElectives !== 1) {
                     electives += '</div> <div class="container columns is-vcentered">'
                 }
                 let course = getCourseObject(userCourses[i], allCourses);
@@ -607,7 +608,7 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
 
     while (currElectives < numElectives) {
         currElectives++;
-        if ((currElectives - 1) % 3 === 0) {
+        if ((currElectives - 1) % 3 === 0 && currElectives !== 1) {
             electives += '</div> <div class="container columns is-vcentered">'
         }
 
@@ -622,7 +623,7 @@ export const generateElectiveClass = function (num) {
     console.log( "moreInfoElective"+num);
     return `<div id="progElective`+num+`" class="card have-reqs-course column" data-status="canTake">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 COMP ???: COMP Elective
             </div>
         </div>
@@ -839,7 +840,7 @@ export const generateCompletedClass = function (course) {
     // Include: Button to uncomplete, class name/number, desc
     let card = `<div id="prog`+course.department+course.number+`" class="card complete-course column" data-status="complete">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -907,15 +908,16 @@ export const addClassFromProg = async function (event) {
     let jwt = localStorage.getItem("jwt");
     let course = event.data.course;
     await addClass(jwt, course.department+course.number);
-    let id = "#prog"+course.department+course.number;
-    $(id).replaceWith(generateCompletedClass(course));
+    handleProgressNavClick();
+    // let id = "#prog"+course.department+course.number;
+    // $(id).replaceWith(generateCompletedClass(course));
     
 }
 
 export const showElectiveInfo = function (event) {
     let id = "#progElective" + event.data.number;
     $(id).replaceWith(`<div id="progElective`+event.data.number+`" class="card have-reqs-course column">
-        <div class="card-content card-content-class">
+        <div class="card-content card-content-class course-desc">
             <p>
                 A COMP course numbered >= 426, not including COMP 495, 496, 691H, and 692H
             </p>
@@ -932,7 +934,7 @@ export const showElectiveTitle = function (event) {
     let id = "#progElective" + event.data.number;
     $(id).replaceWith(`<div id="progElective`+event.data.number+`" class="card have-reqs-course column">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 COMP ???: COMP Elective
             </div>
         </div>
@@ -959,7 +961,7 @@ export const showCourseInfo = function (event) {
     }
 
     $(id).replaceWith(`<div id="prog`+course.department+course.number+`" class="card `+ styleClass +` column" data-status="`+status+`" `+((status === "needReqs")?` data-prereqs="`+prereqs+`"`:"")+`>
-        <div class="card-content card-content-class">
+        <div class="card-content card-content-class course-desc">
 
             <p>
                 ` + course.description + `
@@ -993,7 +995,7 @@ export const showCourseTitle = function (event) {
 
     $(id).replaceWith(`<div id="prog`+course.department+course.number+`" class="card `+ styleClass +` column" data-status="`+status+`" `+((status === "needReqs")?` data-prereqs="`+prereqs+`"`:"")+`>
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -1012,7 +1014,7 @@ export const generateUncompletedClass = function (course, userCourses) {
     if (prereqs.length === 0) {
         return `<div id="prog`+course.department+course.number+`" class="card have-reqs-course column" data-status="canTake">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -1025,7 +1027,7 @@ export const generateUncompletedClass = function (course, userCourses) {
     } else {
         return `<div id="prog`+course.department+course.number+`" class="card need-reqs-course column" data-status="needReqs" data-prereqs="`+prereqs+`">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
