@@ -11,7 +11,7 @@ Start the backend by navigating to the root directory of the backend project and
 
 Once the server is up and running you can start to use the backend wrapper methods that I wrote. 
 
-Call the `createUser(username, password, firstname, lastname, cstrack, gradyear)` method to create a user in the backend and instantiate all the appropriate user objects for that user. 
+Call the `createUser(username, password, firstname, lastname, cstrack, gradyear, email)` method to create a user in the backend and instantiate all the appropriate user objects for that user. 
 
 NOTE: This user must have a unique username otherwise the backend will reject them. This is a feature of the provided backend and not something that I added. 
 
