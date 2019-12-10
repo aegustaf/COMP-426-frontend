@@ -208,6 +208,7 @@ export const handleSignUpSubmit = async function () {
         $("#emailerror").empty();
         $("#emailerror").append(`<div style="color:red">${res.msg}</div>`);
     }else{
+        $("#emailerror").empty();
         // Create user 
         await createUser(username, password, firstname, lastname, cstrack, year, email)
         // Add username to public route
