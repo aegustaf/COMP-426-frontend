@@ -37,7 +37,7 @@ export const setUp = async function () {
     /* clicking on logo takes you to homepage */
     $(document).on("click", "#logo", handleHomeNavClick);
 
-    /* Click handlers for Login, Sign Up, amnd Log Out buttons */
+    /* Click handlers for Login, Sign Up, and Log Out buttons */
     $(document).on("click", "#loginButton", handleLoginButtonClick);
     $(document).on("click", "#signupButton", handleSignUpButtonClick);
     $(document).on("click", "#logoutButton", logout);
@@ -134,7 +134,14 @@ export const handleLoginSubmit = async function () {
     try {
         await loginAndGetStatus(username, password)
     } catch(error) {
-        console.log(error)
+        $('#warning').remove()
+        let html = 
+            `<section class="section profile" id="warning">
+                <div class="notification is-danger profile">
+                    <p><span class="has-text-weight-bold">Woah there!  </span>Wrong username or password.</p>
+                </div>
+            </section>`;
+        $root.prepend(html);
         return
     }
     await renderLoggedInContent()
@@ -143,7 +150,7 @@ export const handleLoginSubmit = async function () {
 export const renderLoginForm = function () {
     $root.empty();
     let html =
-        `<section class="section profile">
+        `<section class="section profile" id="content">
             <div class="card">
                 <header class="card-header">
                 <p class="card-header-title">
@@ -209,8 +216,20 @@ export const handleSignUpSubmit = async function () {
         $("#emailerror").append(`<div style="color:red">${res.msg}</div>`);
     }else{
         $("#emailerror").empty();
-        // Create user 
-        await createUser(username, password, firstname, lastname, cstrack, year, email)
+        try {
+            // Create user 
+            await createUser(username, password, firstname, lastname, cstrack, year, email)
+        } catch(error) {
+            $('#warning').remove()
+            let html = 
+                `<section class="section profile" id="warning">
+                    <div class="notification is-danger profile">
+                        <p><span class="has-text-weight-bold">Woah there!  </span>Fields missing or username already taken.</p>
+                    </div>
+                </section>`;
+            $root.prepend(html);
+            return
+        }
         // Add username to public route
         await addUsernameToPublicRoute(username)
         // Customize site to user
@@ -222,7 +241,7 @@ export const handleSignUpSubmit = async function () {
 export const renderSignUpForm = function () {
     $root.empty();
     let html =
-        `<section class="section profile">
+        `<section class="section profile" id="content">
             <div class="card">
                 <header class="card-header">
                 <p class="card-header-title">
