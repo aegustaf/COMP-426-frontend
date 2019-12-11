@@ -359,6 +359,7 @@ export const handleFindNavClick = async function () {
             addplusListeners(elem)
         }
     })
+
     autocomplete(document.getElementById("search-input"), Array.from(classes.keys()));
     let newclasses = [...classes];
     newclasses = newclasses.filter(arr1Item => !userClasses.includes(arr1Item[0])); // 
@@ -376,6 +377,14 @@ export const handleFindNavClick = async function () {
         $(`#${tab}`).addClass('is-active');
 	});
 };
+
+var delay = (function(){
+    var timer = 0;
+    return function(callback, ms){
+    clearTimeout (timer);
+    timer = setTimeout(callback, ms);
+   };
+  })();
 
 export const searchClass = function(event){
     let userclasses = event.data.param1;
@@ -445,11 +454,105 @@ export const renderAllClasses = function(event){
         }
     })
 }
+  
+export const addDeleteListeners = function (obj) {
+        $("body").on("click", `#delete${obj.department+obj.number}`,{
+            param1: localStorage.getItem("jwt"), param2: obj.department+obj.number
+        }, classRemoval)
+}
 
+export const addplusListeners = function (obj) {
+    $("body").on("click", `#classAdd${obj.department+obj.number}`,{
+        param1: localStorage.getItem("jwt"), param2: obj.department+obj.number
+    }, classAddition)
+}
+
+export const renderAddedClass = function (elem) {
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
+        <header class="card-header">
+        <p class="card-header-title" style="justify-content: center">
+    ${elem.department} ${elem.number}
+    </p>
+    <button class="delete" id= "delete${elem.department}${elem.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>
+        </header>
+        <div class="card-content">
+    <div class="content">
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
+    <p>${elem.description} </p>
+    </div>
+    </div>
+    </div>`;
+    $(".columns").append(classCard)
+
+}
+
+export const renderNewClass = function (elem) {
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
+    <header class="card-header">
+    <p class="card-header-title" style="justify-content: center">
+        ${elem.department} ${elem.number}
+    </p>
+    <a id ="classAdd${elem.department}${elem.number}" style = "visibility: visible" class="add ${elem.department}${elem.number}"><span class="icon">
+    <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
+    </span></a>
+    </header>
+    <div class="card-content">
+    <div class="content">
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
+    <p>${elem.description} </p>
+     </div>
+    </div>
+    </div>`
+    $(".columns").append(classCard);
+}
+
+export const classAddition = async function (event) {
+    let token = event.data.param1;
+    let name = event.data.param2;
+    let classObj;
+    await addClass(token, name);
+    let courses = await getClasses(token);
+    courses = courses.data.result;
+    classObj = getCourseObject(name, courses);
+    $(`a.${name}`).replaceWith(`<button class="delete" id= "delete${name}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
+    addDeleteListeners(classObj);
+}
+
+export const classRemoval = async function(event){
+    let token = event.data.param1;
+    let name = event.data.param2;
+    let classObj;
+    await deleteClass(token, name);
+    let courses = await getClasses(token)
+    courses = courses.data.result;
+    classObj = getCourseObject(name, courses);
+    $(`#delete${name}`).replaceWith(`
+    <a id ="classAdd${name}" style = "visibility: visible" class="add ${name}"><span class="icon">
+    <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
+    </span></a>`);
+    addplusListeners(classObj)
+}
+
+export const getClassObj = async function (token, name) {
+    let classes;
+    let course;
+    await getClasses(token).then(res => {
+        classes = new Map(Object.entries(res.data.result))
+    })
+    classes.forEach(elem => {
+        if (elem.department+elem.number === name) {
+            course = elem;
+        }
+    })
+    return course;
+}
+
+//followed tutorial from w3schools
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
     the text field element and an array of possible autocompleted values:*/
     var currentFocus;
+    
     /*execute a function when someone writes in the text field:*/
     inp.addEventListener("input", function(e) {
         var a, b, i, val = this.value;
@@ -542,99 +645,6 @@ function autocomplete(inp, arr) {
       closeAllLists(e.target);
   });
   }
-  
-
-export const addDeleteListeners = function (obj) {
-        $("body").on("click", `#delete${obj.department+obj.number}`,{
-            param1: localStorage.getItem("jwt"), param2: obj.department+obj.number
-        }, classRemoval)
-}
-
-export const addplusListeners = function (obj) {
-    $("body").on("click", `#classAdd${obj.department+obj.number}`,{
-        param1: localStorage.getItem("jwt"), param2: obj.department+obj.number
-    }, classAddition)
-}
-
-export const renderAddedClass = function (elem) {
-    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
-        <header class="card-header">
-        <p class="card-header-title" style="justify-content: center">
-    ${elem.department} ${elem.number}
-    </p>
-    <button class="delete" id= "delete${elem.department}${elem.number}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>
-        </header>
-        <div class="card-content">
-    <div class="content">
-    <p class="subtitle" style="text-align: center">${elem.name}</p>
-    <p>${elem.description} </p>
-    </div>
-    </div>
-    </div>`;
-    $(".columns").append(classCard)
-
-}
-
-export const renderNewClass = function (elem) {
-    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
-    <header class="card-header">
-    <p class="card-header-title" style="justify-content: center">
-        ${elem.department} ${elem.number}
-    </p>
-    <a id ="classAdd${elem.department}${elem.number}" style = "visibility: visible" class="add ${elem.department}${elem.number}"><span class="icon">
-    <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
-    </span></a>
-    </header>
-    <div class="card-content">
-    <div class="content">
-    <p class="subtitle" style="text-align: center">${elem.name}</p>
-    <p>${elem.description} </p>
-     </div>
-    </div>
-    </div>`
-    $(".columns").append(classCard);
-}
-
-export const classAddition = async function (event) {
-    let token = event.data.param1;
-    let name = event.data.param2;
-    let classObj;
-    await addClass(token, name)
-    let courses = await getClasses(token)
-    courses = courses.data.result;
-    classObj = getCourseObject(name, courses);
-    $(`a.${name}`).replaceWith(`<button class="delete" id= "delete${name}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
-    addDeleteListeners(classObj);
-}
-
-export const classRemoval = async function(event){
-    let token = event.data.param1;
-    let name = event.data.param2;
-    let classObj;
-    await deleteClass(token, name);
-    let courses = await getClasses(token)
-    courses = courses.data.result;
-    classObj = getCourseObject(name, courses);
-    $(`#delete${name}`).replaceWith(`
-    <a id ="classAdd${name}" style = "visibility: visible" class="add ${name}"><span class="icon">
-    <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
-    </span></a>`);
-    addplusListeners(classObj)
-}
-
-export const getClassObj = async function (token, name) {
-    let classes;
-    let course;
-    await getClasses(token).then(res => {
-        classes = new Map(Object.entries(res.data.result))
-    })
-    classes.forEach(elem => {
-        if (elem.department+elem.number === name) {
-            course = elem;
-        }
-    })
-    return course;
-}
 
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 /* Handles when user clicks on Progress tab in nav bar */
