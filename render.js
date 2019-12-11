@@ -1355,7 +1355,7 @@ export const renderProfile = async function () {
                     <div class="content">
                             <b>Username:  </b>   ${stat.data.user.name}
                             <br><br>
-                            <b>Username:  </b>   ${user.email}
+                            <b>Email:  </b>   ${user.email}
                             <br><br>
                             <b>Name:  </b>   ${user.firstname} ${user.lastname}
                             <br><br>
