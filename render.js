@@ -58,10 +58,15 @@ export const setUp = async function () {
     $(document).on("click", "#cancelProfile", handleCancelEditProfileClick);
     $(document).on("click", "#submitProfile", handleSubmitEditProfileClick);
 
+    //click handlers for tabs in findNav
+    $(document).on("click", "#mine", renderMyClasses);
+    $(document).on("click", "#all", renderAllClasses);
+    $(document).on("click", "#new", renderNewClasses);
+    $(document).on("click", "#submit", searchClass);
+
     let resp = await getClasses(localStorage.getItem("jwt"));
     let allCourses = resp.data.result;
     addProgressListeners(allCourses)
-
 };
 
 /*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
@@ -369,11 +374,6 @@ export const handleFindNavClick = async function () {
     })
 
     autocomplete(document.getElementById("search-input"), Array.from(classes.keys()));
-    
-    $(document).on("click", "#myclass", renderMyClasses);
-    $(document).on("click", "#allclass", renderAllClasses);
-    $(document).on("click", "#newclass", renderNewClasses);
-    $(document).on("click", "#submit", searchClass);
 
     $('#tabs li').on('click', function() {
 		var tab = $(this)[0].id;
@@ -381,7 +381,7 @@ export const handleFindNavClick = async function () {
 		$(this).addClass('is-active');
         $('.btn').removeClass('is-active');
         $(`#${tab}`).addClass('is-active');
-	});
+    });
 };
 
 var delay = (function(){
@@ -412,7 +412,6 @@ export const searchClass = async function(){
         if(elem.includes(val) || elem.toLowerCase().includes(val)){
             getClassObj(localStorage.getItem("jwt"), elem).then(obj=>{
                 renderAddedClass(obj);
-                console.log('inside search class')
             })
             found = true;
         }
@@ -437,12 +436,12 @@ export const renderMyClasses = async function(){
     await getUserClasses(localStorage.getItem("jwt")).then(elem => {
         myclasses = (elem.data.result)
     })
+    console.log(myclasses)
     $(".columns").empty();
     myclasses.forEach(course =>{
         getClassObj(localStorage.getItem("jwt"), course).then(obj=>{
             if(!objArr.has(obj.name)){
                 renderAddedClass(obj);
-                console.log('inside my classes')
             }
             objArr.add(obj.name);
         })
@@ -487,7 +486,6 @@ export const renderAllClasses = async function(){
         let className = elem.department + elem.number;
         if (myclasses.includes(className)) {
             renderAddedClass(elem)
-            console.log('inside all classes')
             addDeleteListeners(elem)    
         } else {
             renderNewClass(elem);
@@ -594,6 +592,13 @@ export const getClassObj = async function (token, name) {
     })
     return course;
 }
+
+export const removeNavListeners = function () {
+    $("#mine").off("click", "**");
+    $("#all").off("click", "**");
+    $("#new").off("click","**");
+}
+
 
 //followed tutorial from w3schools
 function autocomplete(inp, arr) {
