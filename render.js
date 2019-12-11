@@ -670,6 +670,8 @@ export const handleProgressNavClick = async function () {
         <p class="is-italic"> Green courses have been taken, yellow courses can be taken, and red courses have prereqs remaining. </p>
     </div>`)
 
+    console.log(userCourses);
+
     if (userTrack === "BA") {
         handleBA(userCourses, allCourses);
     } else if (userTrack === "BS") {
@@ -752,6 +754,7 @@ export const isCompElective = function (name, isBa) {
     let num = parseInt(name.substring(4), 10);
     if (isBa) {
         let altElectives = ["BIOL525","INLS318","INLS609","INLS613","LING540","MATH566","MATH661","PHYS231","PHYS331"]
+        console.log(dept+num);
         return altElectives.includes(dept+num) || (dept === "COMP" && num >= 426);
     }
 
@@ -827,7 +830,7 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
     let numOutsideDept = 0;
     for (let i = 0; i < userCourses.length; i++) {
         if (isCompElective(userCourses[i], isBa)) {
-            let dept = name.substring(0, 4);
+            let dept = userCourses[i].substring(0, 4);
             // BA only allows 2 outside-major courses
             if (!isBa || dept === "COMP" || numOutsideDept < 2){
                 currElectives++;
