@@ -328,16 +328,24 @@ export const handleFindNavClick = async function () {
     })
 
     //adds searchbar
-    let html = `<div class="field has-addons" style="margin-top: 2%; width: 50%; margin-left:25%">
+    let html = `<div class = "wrapper"><div class="field has-addons" style="margin-top: 2%; width: 50%; margin-left:25%">
     <div class="control autocomplete is-expanded">
       <input class="input" type="text" placeholder="Find a class" id="search-input">
     </div>
     <div class="control" style="justify-content:center">
-      <a class="button is-info">
+      <a class="button is-info" id="submit">
         Search
       </a>
     </div>
-  </div><div class ="columns is-mobile is-multiline" style="justify-content: center"></div>`
+  </div>
+  <div class="tabs is-centered" id="tabs">
+  <ul>
+    <li class="btn is-active" id="all"><a class="navbar-item tab" id="allclass">All Classes</a></li>
+    <li class="btn" id="mine"><a class="navbar-item tab" id="myclass">My Classes</a></li>
+    <li class= "btn" id="new"><a class="navbar-item tab" id="newclass">New Classes</a></li>
+  </ul>
+</div>
+<div class ="columns is-mobile is-multiline" style="justify-content: center"></div></div>`
     $root.append(html)
 
     //adds each course 
@@ -352,7 +360,91 @@ export const handleFindNavClick = async function () {
         }
     })
     autocomplete(document.getElementById("search-input"), Array.from(classes.keys()));
+    let newclasses = [...classes];
+    newclasses = newclasses.filter(arr1Item => !userClasses.includes(arr1Item[0])); // 
+    
+    $(document).on("click", "#myclass", {param1: userClasses}, renderMyClasses);
+    $(document).on("click", "#allclass", {param1: classes, param2: userClasses}, renderAllClasses);
+    $(document).on("click", "#newclass", {param1: newclasses}, renderNewClasses);
+    $(document).on("click", "#submit", {param1: userClasses, param2: newclasses}, searchClass);
+
+    $('#tabs li').on('click', function() {
+		var tab = $(this)[0].id;
+		$('#tabs li').removeClass('is-active');
+		$(this).addClass('is-active');
+        $('.btn').removeClass('is-active');
+        $(`#${tab}`).addClass('is-active');
+	});
 };
+
+export const searchClass = function(event){
+    let userclasses = event.data.param1;
+    let classes = event.data.param2;
+    let found = false;
+
+    let val = document.getElementById("search-input").value;
+    $(".columns").empty();
+    userclasses.forEach(elem=>{
+        if(elem.includes(val) || elem.toLowerCase().includes(val)){
+            getClassObj(localStorage.getItem("jwt"), elem).then(obj=>{
+                renderAddedClass(obj);
+            })
+            found = true;
+        }
+    })
+
+    classes.forEach(elem=>{
+        if((elem[1].department+elem[1].number).includes(val) || (elem[1].department+elem[1].number).toLowerCase().includes(val)){
+            getClassObj(localStorage.getItem("jwt"), elem[1].department+elem[1].number).then(obj=>{
+                renderNewClass(obj);
+            })
+            found = true;
+        }
+    })
+
+    if(!found){
+        $(".columns").append(`<p style ="text-align: center" class="subtitle">No classes found. Try again!</p>`)
+    }
+}
+
+export const renderMyClasses = function(event){
+    let myclasses = event.data.param1;
+    $(".columns").empty();
+    myclasses.forEach(course =>{
+        getClassObj(localStorage.getItem("jwt"), course).then(obj=>{
+            renderAddedClass(obj);
+        })
+    })
+    if(myclasses.length ===0){
+        $(".columns").append(`<p style="text-align: center"; class="subtitle">You haven't added any classes yet!</p>`)
+    }
+}
+
+export const renderNewClasses = function(event){
+    let newclasses = event.data.param1;
+    $(".columns").empty();
+    newclasses.forEach(course =>{
+        getClassObj(localStorage.getItem("jwt"), course[1].department+course[1].number).then(obj=>{
+            renderNewClass(obj);
+        })
+    })
+}
+
+export const renderAllClasses = function(event){
+    let classes = event.data.param1;
+    let myclasses = event.data.param2;
+    $(".columns").empty();
+    classes.forEach(elem =>{
+        let className = elem.department + elem.number;
+        if (myclasses.includes(className)) {
+            renderAddedClass(elem)
+            addDeleteListeners(elem)    
+        } else {
+            renderNewClass(elem);
+            addplusListeners(elem)
+        }
+    })
+}
 
 function autocomplete(inp, arr) {
     /*the autocomplete function takes two arguments,
@@ -475,7 +567,7 @@ export const renderAddedClass = function (elem) {
         <div class="card-content">
     <div class="content">
     <p class="subtitle">${elem.name}</p>
-    Instructor: ${elem.instructor} 
+    ${elem.description} 
     </div>
     </div>
     </div>`;
@@ -495,7 +587,7 @@ export const renderNewClass = function (elem) {
     </header>
     <div class="card-content">
     <div class="content">
-    <p class="subtitle">${elem.name}</p>
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
     ${elem.description} 
      </div>
     </div>
@@ -537,7 +629,7 @@ export const getClassObj = async function (token, name) {
         classes = new Map(Object.entries(res.data.result))
     })
     classes.forEach(elem => {
-        if (elem.name === name) {
+        if (elem.department+elem.number === name) {
             course = elem;
         }
     })
