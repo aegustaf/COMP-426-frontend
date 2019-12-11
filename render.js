@@ -559,10 +559,17 @@ export const classRemoval = async function(event){
     let courses = await getClasses(token)
     courses = courses.data.result;
     classObj = getCourseObject(name, courses);
-    $(`#delete${name}`).replaceWith(`
+    let active = $("#mine").hasClass('is-active');
+    if(active){
+        $(`.card.${name}`).remove();
+        renderMyClasses();
+    }
+    else{
+        $(`#delete${name}`).replaceWith(`
     <a id ="classAdd${name}" style = "visibility: visible" class="add ${name}"><span class="icon">
     <i class="fas fa-plus-circle fa-lg" style="margin-top: 8px; margin-right: 7px;"></i>
     </span></a>`);
+    }
     addplusListeners(classObj)
 }
 
