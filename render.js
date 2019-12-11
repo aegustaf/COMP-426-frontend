@@ -89,7 +89,9 @@ export const renderLoggedInContent = async function () {
     let user = result.data.result
     let output = await getUsersFromPublic()
     $("#userCount").empty()
-    $("#userCount").append(`Registered users: ${output.data.result.length}`)
+    html = `<h5 class="has-text-grey">Registered users:  &nbsp;</h5><h5 class="has-text-primary">${output.data.result.length}</h5>`
+    $("#userCount").append(html)
+
     html =
         `<div class="button" id="greeting"><h5 class="subtitle has-text-grey">Hi, ${user.firstname}!</h5></div>
         <a class="button is-primary" id ="logoutButton">
@@ -102,11 +104,12 @@ export const renderNonLoggedInContent = async function () {
     renderHomePage();
     let output = await getUsersFromPublic()
     $("#userCount").empty()
-    $("#userCount").append(`Registered users: ${output.data.result.length}`)
-    // $(".tab").css("visibility", "hidden");
+    let html = `<h5 class="has-text-grey">Registered users:  &nbsp;</h5><h5 class="has-text-primary">${output.data.result.length}</h5>`
+    $("#userCount").append(html)
+
     $(".navbar-start").empty();
     $("#buttons").empty();
-    let html =
+    html =
         `<a class="button is-primary" id ="signupButton">
             <strong>Sign up</strong>
         </a>
