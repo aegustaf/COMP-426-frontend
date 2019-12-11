@@ -566,8 +566,8 @@ export const renderAddedClass = function (elem) {
         </header>
         <div class="card-content">
     <div class="content">
-    <p class="subtitle">${elem.name}</p>
-    ${elem.description} 
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
+    <p>${elem.description} </p>
     </div>
     </div>
     </div>`;
@@ -588,7 +588,7 @@ export const renderNewClass = function (elem) {
     <div class="card-content">
     <div class="content">
     <p class="subtitle" style="text-align: center">${elem.name}</p>
-    ${elem.description} 
+    <p>${elem.description} </p>
      </div>
     </div>
     </div>`
