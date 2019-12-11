@@ -58,6 +58,10 @@ export const setUp = async function () {
     $(document).on("click", "#cancelProfile", handleCancelEditProfileClick);
     $(document).on("click", "#submitProfile", handleSubmitEditProfileClick);
 
+    let resp = await getClasses(localStorage.getItem("jwt"));
+    let allCourses = resp.data.result;
+    addProgressListeners(allCourses)
+
 };
 
 /*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
@@ -639,12 +643,7 @@ export const getClassObj = async function (token, name) {
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 /* Handles when user clicks on Progress tab in nav bar */
 export const handleProgressNavClick = async function () {
-    console.log("handle progress nav click")
-    $root.empty();
-    $root.append(`<div class="container has-text-centered"> 
-        <h1 class="title is-1 is-marginless"> Your Progress</h1>
-        <br/ >
-    </div>`)
+    $root.empty();    
     let jwt = localStorage.getItem("jwt");
     let resp = await getClasses(jwt);
     let allCourses = resp.data.result;
@@ -653,6 +652,11 @@ export const handleProgressNavClick = async function () {
     let response = await getUserFields(jwt);
     let userData = response.data;
     let userTrack = userData.result.cstrack;
+    $root.append(`<div class="container has-text-centered progress-header"> 
+        <h1 class="title is-1"> Your Progress: `+userTrack+` </h1>
+        <p class="is-italic"> Green courses have been taken, yellow courses can be taken, and red courses have prereqs remaining. </p>
+    </div>`)
+
     if (userTrack === "BA") {
         handleBA(userCourses, allCourses);
     } else if (userTrack === "BS") {
@@ -660,9 +664,6 @@ export const handleProgressNavClick = async function () {
     } else {
         handleMinor(userCourses, allCourses);
     }
-
-    removeProgressListeners(allCourses);
-    addProgressListeners(allCourses);
 
 };
 
@@ -694,12 +695,26 @@ export const canTakeClass = function (course, userCoursesInput) {
             if (reqs.length === 1) {
                 response += course.prerequisites[i];
             } else {
-                response += "one of " + course.prerequisites[i];
+                response += "one of " + formatPrereqs(course.prerequisites[i]) + ".";
             }
         }
     }
     return response;
+}
 
+export const formatPrereqs = function (input) {
+    console.log(input)
+    let reqs = input.split(",");
+    let output = "";
+    for (let i = 0; i < input.length; i++) {
+        if (i === input.length - 1) {
+            output += " or ";
+        } else if (i !== 0) {
+            output += " ";
+        }
+        output += input[i];
+    }
+    return output;
 }
 
 
@@ -803,7 +818,7 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
             // BA only allows 2 outside-major courses
             if (!isBa || dept === "COMP" || numOutsideDept < 2){
                 currElectives++;
-                if ((currElectives - 1) % 3 === 0) {
+                if ((currElectives - 1) % 3 === 0 && currElectives !== 1) {
                     electives += '</div> <div class="container columns is-vcentered">'
                 }
                 let course = getCourseObject(userCourses[i], allCourses);
@@ -818,7 +833,7 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
 
     while (currElectives < numElectives) {
         currElectives++;
-        if ((currElectives - 1) % 3 === 0) {
+        if ((currElectives - 1) % 3 === 0 && currElectives !== 1) {
             electives += '</div> <div class="container columns is-vcentered">'
         }
 
@@ -830,10 +845,9 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
 
 // Takes in id num
 export const generateElectiveClass = function (num) {
-    console.log( "moreInfoElective"+num);
     return `<div id="progElective`+num+`" class="card have-reqs-course column" data-status="canTake">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 COMP ???: COMP Elective
             </div>
         </div>
@@ -1006,8 +1020,9 @@ export const handleSecondScience = function (userCourses, allCourses) {
     for (let i = 0; i < courseOptions.length && !hasScience; i++) {
         for (let j = 0; j < userCourses.length && !hasScience; j++) {
             if (userCourses[j] === courseOptions[i]) {
+                
                 hasScience = true;
-                scienceCourse = userCourses[i];
+                scienceCourse = userCourses[j];
             }
         }
     }
@@ -1046,11 +1061,10 @@ export const handleMinor = function (userCourses, allCourses) {
 
 
 export const generateCompletedClass = function (course) {
-    console.log(course)
     // Include: Button to uncomplete, class name/number, desc
     let card = `<div id="prog`+course.department+course.number+`" class="card complete-course column" data-status="complete">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -1104,7 +1118,7 @@ export const addProgressListeners = function (obj) {
     }
 
     for (let i = 1; i < 7; i++) {
-        console.log( "#moreInfoElective"+i);
+     
         $("body").on("click", "#moreInfoElective"+i,{
             number: i,
         }, showElectiveInfo)
@@ -1118,15 +1132,16 @@ export const addClassFromProg = async function (event) {
     let jwt = localStorage.getItem("jwt");
     let course = event.data.course;
     await addClass(jwt, course.department+course.number);
-    let id = "#prog"+course.department+course.number;
-    $(id).replaceWith(generateCompletedClass(course));
+    await handleProgressNavClick();
+    // let id = "#prog"+course.department+course.number;
+    // $(id).replaceWith(generateCompletedClass(course));
     
 }
 
 export const showElectiveInfo = function (event) {
     let id = "#progElective" + event.data.number;
     $(id).replaceWith(`<div id="progElective`+event.data.number+`" class="card have-reqs-course column">
-        <div class="card-content card-content-class">
+        <div class="card-content card-content-class course-desc">
             <p>
                 A COMP course numbered >= 426, not including COMP 495, 496, 691H, and 692H
             </p>
@@ -1143,7 +1158,7 @@ export const showElectiveTitle = function (event) {
     let id = "#progElective" + event.data.number;
     $(id).replaceWith(`<div id="progElective`+event.data.number+`" class="card have-reqs-course column">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 COMP ???: COMP Elective
             </div>
         </div>
@@ -1170,14 +1185,14 @@ export const showCourseInfo = function (event) {
     }
 
     $(id).replaceWith(`<div id="prog`+course.department+course.number+`" class="card `+ styleClass +` column" data-status="`+status+`" `+((status === "needReqs")?` data-prereqs="`+prereqs+`"`:"")+`>
-        <div class="card-content card-content-class">
+        <div class="card-content card-content-class course-desc">
 
             <p>
                 ` + course.description + `
-            </p>
-            `+ ((status === "needReqs") ? `<p class="is-italic">
+            `+ ((status === "needReqs") ? `<span class="is-italic">
                 ` + prereqs + `.
-             </p>` : "")+`
+            </span>` : "")+`
+            </p>
         </div>
         <footer class="card-footer card-footer-class">
             <a id="lessInfo`+ course.department + course.number +`" class="card-footer-item">Less Info</a>
@@ -1204,7 +1219,7 @@ export const showCourseTitle = function (event) {
 
     $(id).replaceWith(`<div id="prog`+course.department+course.number+`" class="card `+ styleClass +` column" data-status="`+status+`" `+((status === "needReqs")?` data-prereqs="`+prereqs+`"`:"")+`>
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -1223,7 +1238,7 @@ export const generateUncompletedClass = function (course, userCourses) {
     if (prereqs.length === 0) {
         return `<div id="prog`+course.department+course.number+`" class="card have-reqs-course column" data-status="canTake">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -1236,7 +1251,7 @@ export const generateUncompletedClass = function (course, userCourses) {
     } else {
         return `<div id="prog`+course.department+course.number+`" class="card need-reqs-course column" data-status="needReqs" data-prereqs="`+prereqs+`">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
