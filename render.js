@@ -58,6 +58,10 @@ export const setUp = async function () {
     $(document).on("click", "#cancelProfile", handleCancelEditProfileClick);
     $(document).on("click", "#submitProfile", handleSubmitEditProfileClick);
 
+    let resp = await getClasses(localStorage.getItem("jwt"));
+    let allCourses = resp.data.result;
+    addProgressListeners(allCourses)
+
 };
 
 /*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
@@ -329,19 +333,26 @@ export const handleFindNavClick = async function () {
     await getUserClasses(token).then(elem => {
         userClasses = (elem.data.result)
     })
-    console.log(userClasses)
 
     //adds searchbar
-    let html = `<div class="field has-addons" style="justify-content: center; margin-top: 2%">
-    <div class="control">
+    let html = `<div class = "wrapper"><div class="field has-addons" style="margin-top: 2%; width: 50%; margin-left:25%">
+    <div class="control autocomplete is-expanded">
       <input class="input" type="text" placeholder="Find a class" id="search-input">
     </div>
-    <div class="control">
-      <a class="button is-info">
+    <div class="control" style="justify-content:center">
+      <a class="button is-info" id="submit">
         Search
       </a>
     </div>
-  </div><div class ="columns is-mobile is-multiline"></div>`
+  </div>
+  <div class="tabs is-centered" id="tabs">
+  <ul>
+    <li class="btn is-active" id="all"><a class="navbar-item tab" id="allclass">All Classes</a></li>
+    <li class="btn" id="mine"><a class="navbar-item tab" id="myclass">My Classes</a></li>
+    <li class= "btn" id="new"><a class="navbar-item tab" id="newclass">New Classes</a></li>
+  </ul>
+</div>
+<div class ="columns is-mobile is-multiline" style="justify-content: center"></div></div>`
     $root.append(html)
 
     //adds each course 
@@ -349,22 +360,108 @@ export const handleFindNavClick = async function () {
         let className = elem.department + elem.number;
         if (userClasses.includes(className)) {
             renderAddedClass(elem)
-            addDeleteListeners(elem)
-            // $(`#delete${className}`).on("click", {
-            //     param1: `${token}`,
-            //     param2: `${elem.department}` +`${elem.number}`
-            // }, classRemoval)    
+            addDeleteListeners(elem)    
         } else {
             renderNewClass(elem);
-            // $(`#classAdd${className}`).on("click", {
-            //     param1: `${token}`,
-            //     param2: `${elem.department}` +`${elem.number}`
-            // }, classAddition)
             addplusListeners(elem)
         }
     })
+
+    autocomplete(document.getElementById("search-input"), Array.from(classes.keys()));
+    let newclasses = [...classes];
+    newclasses = newclasses.filter(arr1Item => !userClasses.includes(arr1Item[0])); // 
+    
+    $(document).on("click", "#myclass", {param1: userClasses}, renderMyClasses);
+    $(document).on("click", "#allclass", {param1: classes, param2: userClasses}, renderAllClasses);
+    $(document).on("click", "#newclass", {param1: newclasses}, renderNewClasses);
+    $(document).on("click", "#submit", {param1: userClasses, param2: newclasses}, searchClass);
+
+    $('#tabs li').on('click', function() {
+		var tab = $(this)[0].id;
+		$('#tabs li').removeClass('is-active');
+		$(this).addClass('is-active');
+        $('.btn').removeClass('is-active');
+        $(`#${tab}`).addClass('is-active');
+	});
 };
 
+var delay = (function(){
+    var timer = 0;
+    return function(callback, ms){
+    clearTimeout (timer);
+    timer = setTimeout(callback, ms);
+   };
+  })();
+
+export const searchClass = function(event){
+    let userclasses = event.data.param1;
+    let classes = event.data.param2;
+    let found = false;
+
+    let val = document.getElementById("search-input").value;
+    $(".columns").empty();
+    userclasses.forEach(elem=>{
+        if(elem.includes(val) || elem.toLowerCase().includes(val)){
+            getClassObj(localStorage.getItem("jwt"), elem).then(obj=>{
+                renderAddedClass(obj);
+            })
+            found = true;
+        }
+    })
+
+    classes.forEach(elem=>{
+        if((elem[1].department+elem[1].number).includes(val) || (elem[1].department+elem[1].number).toLowerCase().includes(val)){
+            getClassObj(localStorage.getItem("jwt"), elem[1].department+elem[1].number).then(obj=>{
+                renderNewClass(obj);
+            })
+            found = true;
+        }
+    })
+
+    if(!found){
+        $(".columns").append(`<p style ="text-align: center" class="subtitle">No classes found. Try again!</p>`)
+    }
+}
+
+export const renderMyClasses = function(event){
+    let myclasses = event.data.param1;
+    $(".columns").empty();
+    myclasses.forEach(course =>{
+        getClassObj(localStorage.getItem("jwt"), course).then(obj=>{
+            renderAddedClass(obj);
+        })
+    })
+    if(myclasses.length ===0){
+        $(".columns").append(`<p style="text-align: center"; class="subtitle">You haven't added any classes yet!</p>`)
+    }
+}
+
+export const renderNewClasses = function(event){
+    let newclasses = event.data.param1;
+    $(".columns").empty();
+    newclasses.forEach(course =>{
+        getClassObj(localStorage.getItem("jwt"), course[1].department+course[1].number).then(obj=>{
+            renderNewClass(obj);
+        })
+    })
+}
+
+export const renderAllClasses = function(event){
+    let classes = event.data.param1;
+    let myclasses = event.data.param2;
+    $(".columns").empty();
+    classes.forEach(elem =>{
+        let className = elem.department + elem.number;
+        if (myclasses.includes(className)) {
+            renderAddedClass(elem)
+            addDeleteListeners(elem)    
+        } else {
+            renderNewClass(elem);
+            addplusListeners(elem)
+        }
+    })
+}
+  
 export const addDeleteListeners = function (obj) {
         $("body").on("click", `#delete${obj.department+obj.number}`,{
             param1: localStorage.getItem("jwt"), param2: obj.department+obj.number
@@ -378,7 +475,7 @@ export const addplusListeners = function (obj) {
 }
 
 export const renderAddedClass = function (elem) {
-    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%">
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
         <header class="card-header">
         <p class="card-header-title" style="justify-content: center">
     ${elem.department} ${elem.number}
@@ -387,8 +484,8 @@ export const renderAddedClass = function (elem) {
         </header>
         <div class="card-content">
     <div class="content">
-    <p class="subtitle">${elem.name}</p>
-    Instructor: ${elem.instructor} 
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
+    <p>${elem.description} </p>
     </div>
     </div>
     </div>`;
@@ -397,7 +494,7 @@ export const renderAddedClass = function (elem) {
 }
 
 export const renderNewClass = function (elem) {
-    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%">
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
     <header class="card-header">
     <p class="card-header-title" style="justify-content: center">
         ${elem.department} ${elem.number}
@@ -408,8 +505,8 @@ export const renderNewClass = function (elem) {
     </header>
     <div class="card-content">
     <div class="content">
-    <p class="subtitle">${elem.name}</p>
-    ${elem.description} 
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
+    <p>${elem.description} </p>
      </div>
     </div>
     </div>`
@@ -420,8 +517,8 @@ export const classAddition = async function (event) {
     let token = event.data.param1;
     let name = event.data.param2;
     let classObj;
-    await addClass(token, name)
-    let courses = await getClasses(token)
+    await addClass(token, name);
+    let courses = await getClasses(token);
     courses = courses.data.result;
     classObj = getCourseObject(name, courses);
     $(`a.${name}`).replaceWith(`<button class="delete" id= "delete${name}" style="margin-top: 7px; margin-right: 6px; visibility: visible"></button>`);
@@ -450,22 +547,116 @@ export const getClassObj = async function (token, name) {
         classes = new Map(Object.entries(res.data.result))
     })
     classes.forEach(elem => {
-        if (elem.name === name) {
+        if (elem.department+elem.number === name) {
             course = elem;
         }
     })
     return course;
 }
 
+//followed tutorial from w3schools
+function autocomplete(inp, arr) {
+    /*the autocomplete function takes two arguments,
+    the text field element and an array of possible autocompleted values:*/
+    var currentFocus;
+    
+    /*execute a function when someone writes in the text field:*/
+    inp.addEventListener("input", function(e) {
+        var a, b, i, val = this.value;
+        /*close any already open lists of autocompleted values*/
+        closeAllLists();
+        if (!val) { return false;}
+        currentFocus = -1;
+        /*create a DIV element that will contain the items (values):*/
+        a = document.createElement("DIV");
+        a.setAttribute("id", this.id + "autocomplete-list");
+        a.setAttribute("class", "autocomplete-items");
+        /*append the DIV element as a child of the autocomplete container:*/
+        this.parentNode.appendChild(a);
+        /*for each item in the array...*/
+        for (i = 0; i < arr.length; i++) {
+          /*check if the item starts with the same letters as the text field value:*/
+          if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            /*create a DIV element for each matching element:*/
+            b = document.createElement("DIV");
+            /*make the matching letters bold:*/
+            b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+            b.innerHTML += arr[i].substr(val.length);
+            /*insert a input field that will hold the current array item's value:*/
+            b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+            /*execute a function when someone clicks on the item value (DIV element):*/
+                b.addEventListener("click", function(e) {
+                /*insert the value for the autocomplete text field:*/
+                inp.value = this.getElementsByTagName("input")[0].value;
+                /*close the list of autocompleted values,
+                (or any other open lists of autocompleted values:*/
+                closeAllLists();
+            });
+            a.appendChild(b);
+          }
+        }
+    });
+    /*execute a function presses a key on the keyboard:*/
+    inp.addEventListener("keydown", function(e) {
+        var x = document.getElementById(this.id + "autocomplete-list");
+        if (x) x = x.getElementsByTagName("div");
+        if (e.keyCode == 40) {
+          /*If the arrow DOWN key is pressed,
+          increase the currentFocus variable:*/
+          currentFocus++;
+          /*and and make the current item more visible:*/
+          addActive(x);
+        } else if (e.keyCode == 38) { //up
+          /*If the arrow UP key is pressed,
+          decrease the currentFocus variable:*/
+          currentFocus--;
+          /*and and make the current item more visible:*/
+          addActive(x);
+        } else if (e.keyCode == 13) {
+          /*If the ENTER key is pressed, prevent the form from being submitted,*/
+          e.preventDefault();
+          if (currentFocus > -1) {
+            /*and simulate a click on the "active" item:*/
+            if (x) x[currentFocus].click();
+          }
+        }
+    });
+    function addActive(x) {
+      /*a function to classify an item as "active":*/
+      if (!x) return false;
+      /*start by removing the "active" class on all items:*/
+      removeActive(x);
+      if (currentFocus >= x.length) currentFocus = 0;
+      if (currentFocus < 0) currentFocus = (x.length - 1);
+      /*add class "autocomplete-active":*/
+      x[currentFocus].classList.add("autocomplete-active");
+    }
+    function removeActive(x) {
+      /*a function to remove the "active" class from all autocomplete items:*/
+      for (var i = 0; i < x.length; i++) {
+        x[i].classList.remove("autocomplete-active");
+      }
+    }
+    function closeAllLists(elmnt) {
+      /*close all autocomplete lists in the document,
+      except the one passed as an argument:*/
+      var x = document.getElementsByClassName("autocomplete-items");
+      for (var i = 0; i < x.length; i++) {
+        if (elmnt != x[i] && elmnt != inp) {
+        x[i].parentNode.removeChild(x[i]);
+      }
+    }
+  }
+  /*execute a function when someone clicks in the document:*/
+  document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+  });
+  }
+
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 /* Handles when user clicks on Progress tab in nav bar */
 export const handleProgressNavClick = async function () {
-    console.log("handle progress nav click")
-    $root.empty();
-    $root.append(`<div class="container has-text-centered"> 
-        <h1 class="title is-1 is-marginless"> Your Progress</h1>
-        <br/ >
-    </div>`)
+    $root.empty();    
     let jwt = localStorage.getItem("jwt");
     let resp = await getClasses(jwt);
     let allCourses = resp.data.result;
@@ -474,6 +665,11 @@ export const handleProgressNavClick = async function () {
     let response = await getUserFields(jwt);
     let userData = response.data;
     let userTrack = userData.result.cstrack;
+    $root.append(`<div class="container has-text-centered progress-header"> 
+        <h1 class="title is-1"> Your Progress: `+userTrack+` </h1>
+        <p class="is-italic"> Green courses have been taken, yellow courses can be taken, and red courses have prereqs remaining. </p>
+    </div>`)
+
     if (userTrack === "BA") {
         handleBA(userCourses, allCourses);
     } else if (userTrack === "BS") {
@@ -481,9 +677,6 @@ export const handleProgressNavClick = async function () {
     } else {
         handleMinor(userCourses, allCourses);
     }
-
-    removeProgressListeners(allCourses);
-    addProgressListeners(allCourses);
 
 };
 
@@ -515,12 +708,26 @@ export const canTakeClass = function (course, userCoursesInput) {
             if (reqs.length === 1) {
                 response += course.prerequisites[i];
             } else {
-                response += "one of " + course.prerequisites[i];
+                response += "one of " + formatPrereqs(course.prerequisites[i]) + ".";
             }
         }
     }
     return response;
+}
 
+export const formatPrereqs = function (input) {
+    console.log(input)
+    let reqs = input.split(",");
+    let output = "";
+    for (let i = 0; i < input.length; i++) {
+        if (i === input.length - 1) {
+            output += " or ";
+        } else if (i !== 0) {
+            output += " ";
+        }
+        output += input[i];
+    }
+    return output;
 }
 
 
@@ -624,7 +831,7 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
             // BA only allows 2 outside-major courses
             if (!isBa || dept === "COMP" || numOutsideDept < 2){
                 currElectives++;
-                if ((currElectives - 1) % 3 === 0) {
+                if ((currElectives - 1) % 3 === 0 && currElectives !== 1) {
                     electives += '</div> <div class="container columns is-vcentered">'
                 }
                 let course = getCourseObject(userCourses[i], allCourses);
@@ -639,7 +846,7 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
 
     while (currElectives < numElectives) {
         currElectives++;
-        if ((currElectives - 1) % 3 === 0) {
+        if ((currElectives - 1) % 3 === 0 && currElectives !== 1) {
             electives += '</div> <div class="container columns is-vcentered">'
         }
 
@@ -651,10 +858,9 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
 
 // Takes in id num
 export const generateElectiveClass = function (num) {
-    console.log( "moreInfoElective"+num);
     return `<div id="progElective`+num+`" class="card have-reqs-course column" data-status="canTake">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 COMP ???: COMP Elective
             </div>
         </div>
@@ -827,8 +1033,9 @@ export const handleSecondScience = function (userCourses, allCourses) {
     for (let i = 0; i < courseOptions.length && !hasScience; i++) {
         for (let j = 0; j < userCourses.length && !hasScience; j++) {
             if (userCourses[j] === courseOptions[i]) {
+                
                 hasScience = true;
-                scienceCourse = userCourses[i];
+                scienceCourse = userCourses[j];
             }
         }
     }
@@ -867,11 +1074,10 @@ export const handleMinor = function (userCourses, allCourses) {
 
 
 export const generateCompletedClass = function (course) {
-    console.log(course)
     // Include: Button to uncomplete, class name/number, desc
     let card = `<div id="prog`+course.department+course.number+`" class="card complete-course column" data-status="complete">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -925,7 +1131,7 @@ export const addProgressListeners = function (obj) {
     }
 
     for (let i = 1; i < 7; i++) {
-        console.log( "#moreInfoElective"+i);
+     
         $("body").on("click", "#moreInfoElective"+i,{
             number: i,
         }, showElectiveInfo)
@@ -939,15 +1145,16 @@ export const addClassFromProg = async function (event) {
     let jwt = localStorage.getItem("jwt");
     let course = event.data.course;
     await addClass(jwt, course.department+course.number);
-    let id = "#prog"+course.department+course.number;
-    $(id).replaceWith(generateCompletedClass(course));
+    await handleProgressNavClick();
+    // let id = "#prog"+course.department+course.number;
+    // $(id).replaceWith(generateCompletedClass(course));
     
 }
 
 export const showElectiveInfo = function (event) {
     let id = "#progElective" + event.data.number;
     $(id).replaceWith(`<div id="progElective`+event.data.number+`" class="card have-reqs-course column">
-        <div class="card-content card-content-class">
+        <div class="card-content card-content-class course-desc">
             <p>
                 A COMP course numbered >= 426, not including COMP 495, 496, 691H, and 692H
             </p>
@@ -964,7 +1171,7 @@ export const showElectiveTitle = function (event) {
     let id = "#progElective" + event.data.number;
     $(id).replaceWith(`<div id="progElective`+event.data.number+`" class="card have-reqs-course column">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 COMP ???: COMP Elective
             </div>
         </div>
@@ -991,14 +1198,14 @@ export const showCourseInfo = function (event) {
     }
 
     $(id).replaceWith(`<div id="prog`+course.department+course.number+`" class="card `+ styleClass +` column" data-status="`+status+`" `+((status === "needReqs")?` data-prereqs="`+prereqs+`"`:"")+`>
-        <div class="card-content card-content-class">
+        <div class="card-content card-content-class course-desc">
 
             <p>
                 ` + course.description + `
-            </p>
-            `+ ((status === "needReqs") ? `<p class="is-italic">
+            `+ ((status === "needReqs") ? `<span class="is-italic">
                 ` + prereqs + `.
-             </p>` : "")+`
+            </span>` : "")+`
+            </p>
         </div>
         <footer class="card-footer card-footer-class">
             <a id="lessInfo`+ course.department + course.number +`" class="card-footer-item">Less Info</a>
@@ -1025,7 +1232,7 @@ export const showCourseTitle = function (event) {
 
     $(id).replaceWith(`<div id="prog`+course.department+course.number+`" class="card `+ styleClass +` column" data-status="`+status+`" `+((status === "needReqs")?` data-prereqs="`+prereqs+`"`:"")+`>
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -1044,7 +1251,7 @@ export const generateUncompletedClass = function (course, userCourses) {
     if (prereqs.length === 0) {
         return `<div id="prog`+course.department+course.number+`" class="card have-reqs-course column" data-status="canTake">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>
@@ -1057,7 +1264,7 @@ export const generateUncompletedClass = function (course, userCourses) {
     } else {
         return `<div id="prog`+course.department+course.number+`" class="card need-reqs-course column" data-status="needReqs" data-prereqs="`+prereqs+`">
         <div class="card-content card-content-class">
-            <div class="title is-4 courseTitle is-marginless">
+            <div class="title is-5 courseTitle is-marginless">
                 ` + course.department + course.number + ": " + course.name + `
             </div>
         </div>

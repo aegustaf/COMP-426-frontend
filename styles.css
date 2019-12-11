@@ -11,6 +11,7 @@ div.complete-course {
     margin-left: 20px;  
     margin-top: 0px;
     margin-bottom: 0px;
+    width: inherit;
     padding: 0px;
     height: 175px;   
     border: 2px solid hsl(141, 53%, 53%);
@@ -18,7 +19,6 @@ div.complete-course {
 }
 div.have-reqs-course {
     margin-right: 20px;
-     
     margin-left: 20px;  
     margin-top: 0px;
     margin-bottom: 0px;
@@ -39,6 +39,7 @@ div.need-reqs-course {
     border: 2px solid hsl(348, 100%, 61%);
     box-shadow: 5px 10px hsl(348, 100%, 61%);
 }
+
 div.courseTitle {
     padding-top: 0px;
     padding-bottom: 10px;
@@ -73,9 +74,26 @@ div.courseTitle {
 }
 
 .card-content-class {
-    overflow: scroll;
     height: 125px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
+
+.title.is-5 {
+    text-align: center;
+}
+
+.course-desc {
+    overflow: scroll;
+}
+
+.progress-header {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+
 
 
 
@@ -86,4 +104,47 @@ div.courseTitle {
     cursor: auto;
     border: none;
 }
+
+.autocomplete {
+    /*the container must be positioned relative:*/
+    position: relative;
+    display: inline-block;
+  }
+  input {
+    border: 1px solid transparent;
+    background-color: #f1f1f1;
+    padding: 10px;
+    font-size: 16px;
+  }
+
+  .autocomplete-items {
+    position: absolute;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    top: 100%;
+    left: 0;
+    right: 0;
+  }
+  .autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #d4d4d4;
+  }
+  .autocomplete-items div:hover {
+    /*when hovering an item:*/
+    background-color: #e9e9e9;
+  }
+  .autocomplete-active {
+    /*when navigating through the items using the arrow keys:*/
+    background-color: DodgerBlue !important;
+    color: #ffffff;
+  }
+
+  /* .tabs ul{
+      justify-content: center;
+  } */
 
