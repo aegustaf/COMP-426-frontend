@@ -360,6 +360,7 @@ export const handleFindNavClick = async function () {
         let className = elem.department + elem.number;
         if (userClasses.includes(className)) {
             renderAddedClass(elem)
+            console.log("Inside find nav click")
             addDeleteListeners(elem)    
         } else {
             renderNewClass(elem);
@@ -411,6 +412,7 @@ export const searchClass = async function(){
         if(elem.includes(val) || elem.toLowerCase().includes(val)){
             getClassObj(localStorage.getItem("jwt"), elem).then(obj=>{
                 renderAddedClass(obj);
+                console.log('inside search class')
             })
             found = true;
         }
@@ -431,13 +433,18 @@ export const searchClass = async function(){
 
 export const renderMyClasses = async function(){
     let myclasses = [];
+    let objArr = new Set();
     await getUserClasses(localStorage.getItem("jwt")).then(elem => {
         myclasses = (elem.data.result)
     })
     $(".columns").empty();
     myclasses.forEach(course =>{
         getClassObj(localStorage.getItem("jwt"), course).then(obj=>{
-            renderAddedClass(obj);
+            if(!objArr.has(obj.name)){
+                renderAddedClass(obj);
+                console.log('inside my classes')
+            }
+            objArr.add(obj.name);
         })
     })
     if(myclasses.length === 0){
@@ -480,6 +487,7 @@ export const renderAllClasses = async function(){
         let className = elem.department + elem.number;
         if (myclasses.includes(className)) {
             renderAddedClass(elem)
+            console.log('inside all classes')
             addDeleteListeners(elem)    
         } else {
             renderNewClass(elem);
