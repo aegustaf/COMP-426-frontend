@@ -58,6 +58,10 @@ export const setUp = async function () {
     $(document).on("click", "#cancelProfile", handleCancelEditProfileClick);
     $(document).on("click", "#submitProfile", handleSubmitEditProfileClick);
 
+    let resp = await getClasses(localStorage.getItem("jwt"));
+    let allCourses = resp.data.result;
+    addProgressListeners(allCourses)
+
 };
 
 /*----------------------------------------- LOGGED IN  VS LOGGED OUT NAV BAR CHANGES -------------------------------------------*/
@@ -457,8 +461,7 @@ export const getClassObj = async function (token, name) {
 /*----------------------------------------- PROGRESS TAB -------------------------------------------*/
 /* Handles when user clicks on Progress tab in nav bar */
 export const handleProgressNavClick = async function () {
-    $root.empty();
-    
+    $root.empty();    
     let jwt = localStorage.getItem("jwt");
     let resp = await getClasses(jwt);
     let allCourses = resp.data.result;
@@ -479,9 +482,6 @@ export const handleProgressNavClick = async function () {
     } else {
         handleMinor(userCourses, allCourses);
     }
-
-    removeProgressListeners(allCourses);
-    addProgressListeners(allCourses);
 
 };
 
@@ -513,12 +513,26 @@ export const canTakeClass = function (course, userCoursesInput) {
             if (reqs.length === 1) {
                 response += course.prerequisites[i];
             } else {
-                response += "one of " + course.prerequisites[i];
+                response += "one of " + formatPrereqs(course.prerequisites[i]) + ".";
             }
         }
     }
     return response;
+}
 
+export const formatPrereqs = function (input) {
+    console.log(input)
+    let reqs = input.split(",");
+    let output = "";
+    for (let i = 0; i < input.length; i++) {
+        if (i === input.length - 1) {
+            output += " or ";
+        } else if (i !== 0) {
+            output += " ";
+        }
+        output += input[i];
+    }
+    return output;
 }
 
 
@@ -649,7 +663,6 @@ export const handleElectives = function (numElectives, userCourses, allCourses, 
 
 // Takes in id num
 export const generateElectiveClass = function (num) {
-    console.log( "moreInfoElective"+num);
     return `<div id="progElective`+num+`" class="card have-reqs-course column" data-status="canTake">
         <div class="card-content card-content-class">
             <div class="title is-5 courseTitle is-marginless">
@@ -825,8 +838,9 @@ export const handleSecondScience = function (userCourses, allCourses) {
     for (let i = 0; i < courseOptions.length && !hasScience; i++) {
         for (let j = 0; j < userCourses.length && !hasScience; j++) {
             if (userCourses[j] === courseOptions[i]) {
+                
                 hasScience = true;
-                scienceCourse = userCourses[i];
+                scienceCourse = userCourses[j];
             }
         }
     }
@@ -865,7 +879,6 @@ export const handleMinor = function (userCourses, allCourses) {
 
 
 export const generateCompletedClass = function (course) {
-    console.log(course)
     // Include: Button to uncomplete, class name/number, desc
     let card = `<div id="prog`+course.department+course.number+`" class="card complete-course column" data-status="complete">
         <div class="card-content card-content-class">
@@ -923,7 +936,7 @@ export const addProgressListeners = function (obj) {
     }
 
     for (let i = 1; i < 7; i++) {
-        console.log( "#moreInfoElective"+i);
+     
         $("body").on("click", "#moreInfoElective"+i,{
             number: i,
         }, showElectiveInfo)
@@ -937,7 +950,7 @@ export const addClassFromProg = async function (event) {
     let jwt = localStorage.getItem("jwt");
     let course = event.data.course;
     await addClass(jwt, course.department+course.number);
-    handleProgressNavClick();
+    await handleProgressNavClick();
     // let id = "#prog"+course.department+course.number;
     // $(id).replaceWith(generateCompletedClass(course));
     
@@ -994,10 +1007,10 @@ export const showCourseInfo = function (event) {
 
             <p>
                 ` + course.description + `
-            </p>
-            `+ ((status === "needReqs") ? `<p class="is-italic">
+            `+ ((status === "needReqs") ? `<span class="is-italic">
                 ` + prereqs + `.
-             </p>` : "")+`
+            </span>` : "")+`
+            </p>
         </div>
         <footer class="card-footer card-footer-class">
             <a id="lessInfo`+ course.department + course.number +`" class="card-footer-item">Less Info</a>
