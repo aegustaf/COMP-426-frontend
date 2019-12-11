@@ -365,13 +365,11 @@ export const handleFindNavClick = async function () {
     })
 
     autocomplete(document.getElementById("search-input"), Array.from(classes.keys()));
-    let newclasses = [...classes];
-    newclasses = newclasses.filter(arr1Item => !userClasses.includes(arr1Item[0])); // 
     
-    $(document).on("click", "#myclass", {param1: userClasses}, renderMyClasses);
-    $(document).on("click", "#allclass", {param1: classes, param2: userClasses}, renderAllClasses);
-    $(document).on("click", "#newclass", {param1: newclasses}, renderNewClasses);
-    $(document).on("click", "#submit", {param1: userClasses, param2: newclasses}, searchClass);
+    $(document).on("click", "#myclass", renderMyClasses);
+    $(document).on("click", "#allclass", renderAllClasses);
+    $(document).on("click", "#newclass", renderNewClasses);
+    $(document).on("click", "#submit", searchClass);
 
     $('#tabs li').on('click', function() {
 		var tab = $(this)[0].id;
@@ -390,9 +388,18 @@ var delay = (function(){
    };
   })();
 
-export const searchClass = function(event){
-    let userclasses = event.data.param1;
-    let classes = event.data.param2;
+export const searchClass = async function(){
+    // let userclasses = event.data.param1;
+    // let classes = event.data.param2;
+    let token = localStorage.getItem("jwt")
+    let classes;
+    let userclasses;
+    await getClasses(token).then(res => {
+        classes = new Map(Object.entries(res.data.result))
+    })
+    await getUserClasses(token).then(elem => {
+        userclasses = (elem.data.result)
+    })
     let found = false;
 
     let val = document.getElementById("search-input").value;
@@ -420,21 +427,34 @@ export const searchClass = function(event){
     }
 }
 
-export const renderMyClasses = function(event){
-    let myclasses = event.data.param1;
+export const renderMyClasses = async function(){
+    let myclasses = [];
+    await getUserClasses(localStorage.getItem("jwt")).then(elem => {
+        myclasses = (elem.data.result)
+    })
     $(".columns").empty();
     myclasses.forEach(course =>{
         getClassObj(localStorage.getItem("jwt"), course).then(obj=>{
             renderAddedClass(obj);
         })
     })
-    if(myclasses.length ===0){
+    if(myclasses.length === 0){
         $(".columns").append(`<p style="text-align: center"; class="subtitle">You haven't added any classes yet!</p>`)
     }
 }
 
-export const renderNewClasses = function(event){
-    let newclasses = event.data.param1;
+export const renderNewClasses = async function(){
+    let token = localStorage.getItem("jwt")
+    let classes;
+    let userClasses;
+    await getClasses(token).then(res => {
+        classes = new Map(Object.entries(res.data.result))
+    })
+    await getUserClasses(token).then(elem => {
+        userClasses = (elem.data.result)
+    })
+    let newclasses = [...classes];
+    newclasses = newclasses.filter(arr1Item => !userClasses.includes(arr1Item[0]));
     $(".columns").empty();
     newclasses.forEach(course =>{
         getClassObj(localStorage.getItem("jwt"), course[1].department+course[1].number).then(obj=>{
@@ -443,9 +463,16 @@ export const renderNewClasses = function(event){
     })
 }
 
-export const renderAllClasses = function(event){
-    let classes = event.data.param1;
-    let myclasses = event.data.param2;
+export const renderAllClasses = async function(){
+    let token = localStorage.getItem("jwt")
+    let classes;
+    let myclasses;
+    await getClasses(token).then(res => {
+        classes = new Map(Object.entries(res.data.result))
+    })
+    await getUserClasses(token).then(elem => {
+        myclasses = (elem.data.result)
+    })
     $(".columns").empty();
     classes.forEach(elem =>{
         let className = elem.department + elem.number;
