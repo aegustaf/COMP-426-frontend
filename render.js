@@ -392,8 +392,6 @@ var delay = (function(){
   })();
 
 export const searchClass = async function(){
-    // let userclasses = event.data.param1;
-    // let classes = event.data.param2;
     let token = localStorage.getItem("jwt")
     let classes;
     let userclasses;
@@ -404,9 +402,11 @@ export const searchClass = async function(){
         userclasses = (elem.data.result)
     })
     let found = false;
-
+    let newclasses = [...classes];
+    newclasses = newclasses.filter(arr1Item => !userclasses.includes(arr1Item[0]));
     let val = document.getElementById("search-input").value;
     $(".columns").empty();
+
     userclasses.forEach(elem=>{
         if(elem.includes(val) || elem.toLowerCase().includes(val)){
             getClassObj(localStorage.getItem("jwt"), elem).then(obj=>{
@@ -415,8 +415,7 @@ export const searchClass = async function(){
             found = true;
         }
     })
-
-    classes.forEach(elem=>{
+    newclasses.forEach(elem=>{
         if((elem[1].department+elem[1].number).includes(val) || (elem[1].department+elem[1].number).toLowerCase().includes(val)){
             getClassObj(localStorage.getItem("jwt"), elem[1].department+elem[1].number).then(obj=>{
                 renderNewClass(obj);
