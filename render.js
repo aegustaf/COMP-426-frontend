@@ -330,19 +330,26 @@ export const handleFindNavClick = async function () {
     await getUserClasses(token).then(elem => {
         userClasses = (elem.data.result)
     })
-    console.log(userClasses)
 
     //adds searchbar
-    let html = `<div class="field has-addons" style="justify-content: center; margin-top: 2%">
-    <div class="control">
+    let html = `<div class = "wrapper"><div class="field has-addons" style="margin-top: 2%; width: 50%; margin-left:25%">
+    <div class="control autocomplete is-expanded">
       <input class="input" type="text" placeholder="Find a class" id="search-input">
     </div>
-    <div class="control">
-      <a class="button is-info">
+    <div class="control" style="justify-content:center">
+      <a class="button is-info" id="submit">
         Search
       </a>
     </div>
-  </div><div class ="columns is-mobile is-multiline"></div>`
+  </div>
+  <div class="tabs is-centered" id="tabs">
+  <ul>
+    <li class="btn is-active" id="all"><a class="navbar-item tab" id="allclass">All Classes</a></li>
+    <li class="btn" id="mine"><a class="navbar-item tab" id="myclass">My Classes</a></li>
+    <li class= "btn" id="new"><a class="navbar-item tab" id="newclass">New Classes</a></li>
+  </ul>
+</div>
+<div class ="columns is-mobile is-multiline" style="justify-content: center"></div></div>`
     $root.append(html)
 
     //adds each course 
@@ -350,21 +357,196 @@ export const handleFindNavClick = async function () {
         let className = elem.department + elem.number;
         if (userClasses.includes(className)) {
             renderAddedClass(elem)
-            addDeleteListeners(elem)
-            // $(`#delete${className}`).on("click", {
-            //     param1: `${token}`,
-            //     param2: `${elem.department}` +`${elem.number}`
-            // }, classRemoval)    
+            addDeleteListeners(elem)    
         } else {
             renderNewClass(elem);
-            // $(`#classAdd${className}`).on("click", {
-            //     param1: `${token}`,
-            //     param2: `${elem.department}` +`${elem.number}`
-            // }, classAddition)
             addplusListeners(elem)
         }
     })
+    autocomplete(document.getElementById("search-input"), Array.from(classes.keys()));
+    let newclasses = [...classes];
+    newclasses = newclasses.filter(arr1Item => !userClasses.includes(arr1Item[0])); // 
+    
+    $(document).on("click", "#myclass", {param1: userClasses}, renderMyClasses);
+    $(document).on("click", "#allclass", {param1: classes, param2: userClasses}, renderAllClasses);
+    $(document).on("click", "#newclass", {param1: newclasses}, renderNewClasses);
+    $(document).on("click", "#submit", {param1: userClasses, param2: newclasses}, searchClass);
+
+    $('#tabs li').on('click', function() {
+		var tab = $(this)[0].id;
+		$('#tabs li').removeClass('is-active');
+		$(this).addClass('is-active');
+        $('.btn').removeClass('is-active');
+        $(`#${tab}`).addClass('is-active');
+	});
 };
+
+export const searchClass = function(event){
+    let userclasses = event.data.param1;
+    let classes = event.data.param2;
+    let found = false;
+
+    let val = document.getElementById("search-input").value;
+    $(".columns").empty();
+    userclasses.forEach(elem=>{
+        if(elem.includes(val) || elem.toLowerCase().includes(val)){
+            getClassObj(localStorage.getItem("jwt"), elem).then(obj=>{
+                renderAddedClass(obj);
+            })
+            found = true;
+        }
+    })
+
+    classes.forEach(elem=>{
+        if((elem[1].department+elem[1].number).includes(val) || (elem[1].department+elem[1].number).toLowerCase().includes(val)){
+            getClassObj(localStorage.getItem("jwt"), elem[1].department+elem[1].number).then(obj=>{
+                renderNewClass(obj);
+            })
+            found = true;
+        }
+    })
+
+    if(!found){
+        $(".columns").append(`<p style ="text-align: center" class="subtitle">No classes found. Try again!</p>`)
+    }
+}
+
+export const renderMyClasses = function(event){
+    let myclasses = event.data.param1;
+    $(".columns").empty();
+    myclasses.forEach(course =>{
+        getClassObj(localStorage.getItem("jwt"), course).then(obj=>{
+            renderAddedClass(obj);
+        })
+    })
+    if(myclasses.length ===0){
+        $(".columns").append(`<p style="text-align: center"; class="subtitle">You haven't added any classes yet!</p>`)
+    }
+}
+
+export const renderNewClasses = function(event){
+    let newclasses = event.data.param1;
+    $(".columns").empty();
+    newclasses.forEach(course =>{
+        getClassObj(localStorage.getItem("jwt"), course[1].department+course[1].number).then(obj=>{
+            renderNewClass(obj);
+        })
+    })
+}
+
+export const renderAllClasses = function(event){
+    let classes = event.data.param1;
+    let myclasses = event.data.param2;
+    $(".columns").empty();
+    classes.forEach(elem =>{
+        let className = elem.department + elem.number;
+        if (myclasses.includes(className)) {
+            renderAddedClass(elem)
+            addDeleteListeners(elem)    
+        } else {
+            renderNewClass(elem);
+            addplusListeners(elem)
+        }
+    })
+}
+
+function autocomplete(inp, arr) {
+    /*the autocomplete function takes two arguments,
+    the text field element and an array of possible autocompleted values:*/
+    var currentFocus;
+    /*execute a function when someone writes in the text field:*/
+    inp.addEventListener("input", function(e) {
+        var a, b, i, val = this.value;
+        /*close any already open lists of autocompleted values*/
+        closeAllLists();
+        if (!val) { return false;}
+        currentFocus = -1;
+        /*create a DIV element that will contain the items (values):*/
+        a = document.createElement("DIV");
+        a.setAttribute("id", this.id + "autocomplete-list");
+        a.setAttribute("class", "autocomplete-items");
+        /*append the DIV element as a child of the autocomplete container:*/
+        this.parentNode.appendChild(a);
+        /*for each item in the array...*/
+        for (i = 0; i < arr.length; i++) {
+          /*check if the item starts with the same letters as the text field value:*/
+          if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+            /*create a DIV element for each matching element:*/
+            b = document.createElement("DIV");
+            /*make the matching letters bold:*/
+            b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+            b.innerHTML += arr[i].substr(val.length);
+            /*insert a input field that will hold the current array item's value:*/
+            b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+            /*execute a function when someone clicks on the item value (DIV element):*/
+                b.addEventListener("click", function(e) {
+                /*insert the value for the autocomplete text field:*/
+                inp.value = this.getElementsByTagName("input")[0].value;
+                /*close the list of autocompleted values,
+                (or any other open lists of autocompleted values:*/
+                closeAllLists();
+            });
+            a.appendChild(b);
+          }
+        }
+    });
+    /*execute a function presses a key on the keyboard:*/
+    inp.addEventListener("keydown", function(e) {
+        var x = document.getElementById(this.id + "autocomplete-list");
+        if (x) x = x.getElementsByTagName("div");
+        if (e.keyCode == 40) {
+          /*If the arrow DOWN key is pressed,
+          increase the currentFocus variable:*/
+          currentFocus++;
+          /*and and make the current item more visible:*/
+          addActive(x);
+        } else if (e.keyCode == 38) { //up
+          /*If the arrow UP key is pressed,
+          decrease the currentFocus variable:*/
+          currentFocus--;
+          /*and and make the current item more visible:*/
+          addActive(x);
+        } else if (e.keyCode == 13) {
+          /*If the ENTER key is pressed, prevent the form from being submitted,*/
+          e.preventDefault();
+          if (currentFocus > -1) {
+            /*and simulate a click on the "active" item:*/
+            if (x) x[currentFocus].click();
+          }
+        }
+    });
+    function addActive(x) {
+      /*a function to classify an item as "active":*/
+      if (!x) return false;
+      /*start by removing the "active" class on all items:*/
+      removeActive(x);
+      if (currentFocus >= x.length) currentFocus = 0;
+      if (currentFocus < 0) currentFocus = (x.length - 1);
+      /*add class "autocomplete-active":*/
+      x[currentFocus].classList.add("autocomplete-active");
+    }
+    function removeActive(x) {
+      /*a function to remove the "active" class from all autocomplete items:*/
+      for (var i = 0; i < x.length; i++) {
+        x[i].classList.remove("autocomplete-active");
+      }
+    }
+    function closeAllLists(elmnt) {
+      /*close all autocomplete lists in the document,
+      except the one passed as an argument:*/
+      var x = document.getElementsByClassName("autocomplete-items");
+      for (var i = 0; i < x.length; i++) {
+        if (elmnt != x[i] && elmnt != inp) {
+        x[i].parentNode.removeChild(x[i]);
+      }
+    }
+  }
+  /*execute a function when someone clicks in the document:*/
+  document.addEventListener("click", function (e) {
+      closeAllLists(e.target);
+  });
+  }
+  
 
 export const addDeleteListeners = function (obj) {
         $("body").on("click", `#delete${obj.department+obj.number}`,{
@@ -379,7 +561,7 @@ export const addplusListeners = function (obj) {
 }
 
 export const renderAddedClass = function (elem) {
-    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%">
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
         <header class="card-header">
         <p class="card-header-title" style="justify-content: center">
     ${elem.department} ${elem.number}
@@ -388,8 +570,8 @@ export const renderAddedClass = function (elem) {
         </header>
         <div class="card-content">
     <div class="content">
-    <p class="subtitle">${elem.name}</p>
-    Instructor: ${elem.instructor} 
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
+    <p>${elem.description} </p>
     </div>
     </div>
     </div>`;
@@ -398,7 +580,7 @@ export const renderAddedClass = function (elem) {
 }
 
 export const renderNewClass = function (elem) {
-    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%">
+    let classCard = `<div class="card ${elem.department}${elem.number}" style="width: 30%; margin: 1%;">
     <header class="card-header">
     <p class="card-header-title" style="justify-content: center">
         ${elem.department} ${elem.number}
@@ -409,8 +591,8 @@ export const renderNewClass = function (elem) {
     </header>
     <div class="card-content">
     <div class="content">
-    <p class="subtitle">${elem.name}</p>
-    ${elem.description} 
+    <p class="subtitle" style="text-align: center">${elem.name}</p>
+    <p>${elem.description} </p>
      </div>
     </div>
     </div>`
@@ -451,7 +633,7 @@ export const getClassObj = async function (token, name) {
         classes = new Map(Object.entries(res.data.result))
     })
     classes.forEach(elem => {
-        if (elem.name === name) {
+        if (elem.department+elem.number === name) {
             course = elem;
         }
     })
